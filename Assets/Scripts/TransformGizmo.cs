@@ -33,15 +33,20 @@ public class TransformGizmo : MonoBehaviour
 
     private Action action;
 
-    void Start()
+    public bool initialized = false;
+
+    public void Initialize(Transform target, Camera cam)
     {
+        this.target = target;
+        this.cam = cam;
         CreateAllHandles();
         action = CheckMouseDown;
+        initialized = true;
     }
 
     void Update()
     {
-        if (target == null || cam == null) return;
+        if (!initialized || target == null || cam == null) return;
 
         transform.position = target.position;
         transform.rotation = target.rotation;
@@ -68,7 +73,7 @@ public class TransformGizmo : MonoBehaviour
             // 先判斷是否在旋轉 Gizmo 上（不使用 Collider）
             // 順序：Y > X > Z（可依需求調整）
             float ringRadius = 1.0f * 1.2f; // Torus 半徑 * scale
-            float thickness = 8f; // 可互動寬度（像素）
+            float thickness = 16f; // 可互動寬度（像素，放寬為原本兩倍）
             Vector3 center = target.position;
             bool found = false;
             if (enableRotateY && yRotateHandle != null && RotateGizmo.IsMouseOnGizmo(cam, center, transform.up, ringRadius, thickness))
@@ -137,7 +142,7 @@ public class TransformGizmo : MonoBehaviour
 
             // Hover 效果改為數學判斷（旋轉環優先）
             float ringRadius = 1.0f * 1.2f;
-            float thickness = 8f;
+            float thickness = 16f;
             Vector3 center = target.position;
             bool hoverFound = false;
             if (enableRotateY && yRotateHandle != null && RotateGizmo.IsMouseOnGizmo(cam, center, transform.up, ringRadius, thickness))
