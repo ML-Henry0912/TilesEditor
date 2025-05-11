@@ -10,8 +10,8 @@ public class PlaneGizmo : GizmoBase
     public enum PlaneType { XY, XZ, YZ }
     public PlaneType planeType;
 
-    private Camera cam;
-    private float size;
+    Camera cam;
+    float size;
 
     public void Initialize(PlaneType type, Color color, Camera cam, float size)
     {
@@ -82,13 +82,13 @@ public class PlaneGizmo : GizmoBase
         Vector2 mouse = Input.mousePosition;
         float QuadArea(Vector2 a, Vector2 b, Vector2 c, Vector2 d)
         {
-            float TriArea(Vector2 p1, Vector2 p2, Vector2 p3) => Mathf.Abs((p1.x*(p2.y-p3.y) + p2.x*(p3.y-p1.y) + p3.x*(p1.y-p2.y))/2f);
+            float TriArea(Vector2 p1, Vector2 p2, Vector2 p3) => Mathf.Abs((p1.x * (p2.y - p3.y) + p2.x * (p3.y - p1.y) + p3.x * (p1.y - p2.y)) / 2f);
             return TriArea(a, b, c) + TriArea(a, c, d);
         }
         float quadArea = QuadArea(screenCorners[0], screenCorners[1], screenCorners[2], screenCorners[3]);
         float sumArea = 0f;
         for (int i = 0; i < 4; i++)
-            sumArea += Mathf.Abs((screenCorners[i].x*(screenCorners[(i+1)%4].y-mouse.y) + screenCorners[(i+1)%4].x*(mouse.y-screenCorners[i].y) + mouse.x*(screenCorners[i].y-screenCorners[(i+1)%4].y))/2f);
+            sumArea += Mathf.Abs((screenCorners[i].x * (screenCorners[(i + 1) % 4].y - mouse.y) + screenCorners[(i + 1) % 4].x * (mouse.y - screenCorners[i].y) + mouse.x * (screenCorners[i].y - screenCorners[(i + 1) % 4].y)) / 2f);
         return Mathf.Abs(sumArea - quadArea) < 1.5f;
     }
 }

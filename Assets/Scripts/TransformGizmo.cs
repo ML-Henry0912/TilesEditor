@@ -24,20 +24,20 @@ public class TransformGizmo : MonoBehaviour
     public bool enableRotateY = true;
     public bool enableRotateZ = true;
 
-    private AxisGizmo xHandle, yHandle, zHandle;
-    private PlaneGizmo xyHandle, xzHandle, yzHandle;
-    private RotateGizmo xRotHandle, yRotHandle, zRotHandle;
+    AxisGizmo xHandle, yHandle, zHandle;
+    PlaneGizmo xyHandle, xzHandle, yzHandle;
+    RotateGizmo xRotHandle, yRotHandle, zRotHandle;
 
-    private Vector3 dragStartPos, objectStartPos;
-    private AxisGizmo activeAxis;
-    private PlaneGizmo activePlane;
-    private RotateGizmo activeRotate;
+    Vector3 dragStartPos, objectStartPos;
+    AxisGizmo activeAxis;
+    PlaneGizmo activePlane;
+    RotateGizmo activeRotate;
 
-    private Vector3 rotateStartPoint;
-    private Quaternion objectStartRot;
-    private Plane rotationPlane;
+    Vector3 rotateStartPoint;
+    Quaternion objectStartRot;
+    Plane rotationPlane;
 
-    private Action action;
+    Action action;
 
     bool initialized = false;
 
@@ -48,7 +48,7 @@ public class TransformGizmo : MonoBehaviour
         public Func<TransformGizmo, bool> visibleCondition;
     }
 
-    private List<GizmoHandleConfig> handleConfigs = new List<GizmoHandleConfig>();
+    List<GizmoHandleConfig> handleConfigs = new List<GizmoHandleConfig>();
 
     public void Initialize(Transform target, Camera cam)
     {
@@ -361,7 +361,7 @@ public class TransformGizmo : MonoBehaviour
         action = CheckHover;
     }
 
-    private Vector3 GetClosestPointOnAxis(Ray ray, Vector3 axisOrigin, Vector3 axisDir)
+    Vector3 GetClosestPointOnAxis(Ray ray, Vector3 axisOrigin, Vector3 axisDir)
     {
         Vector3 p1 = ray.origin;
         Vector3 d1 = ray.direction;
@@ -384,7 +384,7 @@ public class TransformGizmo : MonoBehaviour
         return p1 + d1 * s;
     }
 
-    private void CreateAllHandles()
+    void CreateAllHandles()
     {
         xHandle = CreateAxisHandle("X_Handle", new Vector3(0.5f, 0.0f, 0.0f), Quaternion.Euler(0.0f, 0.0f, -90.0f), Color.red, AxisGizmo.Axis.X);
         yHandle = CreateAxisHandle("Y_Handle", new Vector3(0.0f, 0.5f, 0.0f), Quaternion.identity, Color.green, AxisGizmo.Axis.Y);
@@ -399,7 +399,7 @@ public class TransformGizmo : MonoBehaviour
         zRotHandle = CreateRotateHandle("Z_Rotate", Vector3.zero, Quaternion.Euler(90.0f, 0.0f, 0.0f), Color.blue, RotateGizmo.Axis.Z);
     }
 
-    private void RegisterHandles()
+    void RegisterHandles()
     {
         handleConfigs.Clear();
         handleConfigs.Add(new GizmoHandleConfig
@@ -449,7 +449,7 @@ public class TransformGizmo : MonoBehaviour
         });
     }
 
-    private AxisGizmo CreateAxisHandle(string name, Vector3 localPos, Quaternion localRot, Color color, AxisGizmo.Axis axis)
+    AxisGizmo CreateAxisHandle(string name, Vector3 localPos, Quaternion localRot, Color color, AxisGizmo.Axis axis)
     {
         GameObject go = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
         go.name = name;
@@ -463,7 +463,7 @@ public class TransformGizmo : MonoBehaviour
         return axisGizmo;
     }
 
-    private PlaneGizmo CreatePlaneHandle(string name, Vector3 localPos, Quaternion localRot, Color color, PlaneGizmo.PlaneType type)
+    PlaneGizmo CreatePlaneHandle(string name, Vector3 localPos, Quaternion localRot, Color color, PlaneGizmo.PlaneType type)
     {
         GameObject go = GameObject.CreatePrimitive(PrimitiveType.Quad);
         go.name = name;
@@ -499,7 +499,7 @@ public class TransformGizmo : MonoBehaviour
         return planeGizmo;
     }
 
-    private RotateGizmo CreateRotateHandle(string name, Vector3 localPos, Quaternion localRot, Color color, RotateGizmo.Axis axis)
+    RotateGizmo CreateRotateHandle(string name, Vector3 localPos, Quaternion localRot, Color color, RotateGizmo.Axis axis)
     {
         GameObject go = new GameObject(name);
         go.tag = GIZMO_TAG;

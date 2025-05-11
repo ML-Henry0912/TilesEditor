@@ -13,8 +13,8 @@ public class RotateGizmo : GizmoBase
     [HideInInspector]
     public Vector3 WorldAxis;
 
-    private Camera cam;
-    private float thickness;
+    Camera cam;
+    float thickness;
 
     public void Initialize(Axis axisType, Color color, Camera cam, float thickness)
     {

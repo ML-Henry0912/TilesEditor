@@ -12,9 +12,9 @@ public class AxisGizmo : GizmoBase
 
     [HideInInspector] public Vector3 WorldDirection;
 
-    private Camera cam;
-    private float length;
-    private float thickness;
+    Camera cam;
+    float length;
+    float thickness;
 
     public void Initialize(Axis axisType, Color color, Camera cam, float length, float thickness)
     {

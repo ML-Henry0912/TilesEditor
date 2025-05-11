@@ -10,8 +10,8 @@ public class TestGizmoSpawner : MonoBehaviour
     public Camera cam;
     public Transform target;
 
-    private GameObject spawnedObj;
-    private TransformGizmo gizmo;
+    GameObject spawnedObj;
+    TransformGizmo gizmo;
 
     void OnGUI()
     {
