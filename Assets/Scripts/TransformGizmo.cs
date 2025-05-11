@@ -15,14 +15,14 @@ public class TransformGizmo : MonoBehaviour
     public Camera cam;
 
     [Header("Translate Axis Enable")]
-    public bool enableTranslateX = true;
-    public bool enableTranslateY = true;
-    public bool enableTranslateZ = true;
+    public bool translateX = true;
+    public bool translateY = true;
+    public bool translateZ = true;
 
     [Header("Rotate Axis Enable")]
-    public bool enableRotateX = true;
-    public bool enableRotateY = true;
-    public bool enableRotateZ = true;
+    public bool rotateX = true;
+    public bool rotateY = true;
+    public bool rotateZ = true;
 
     AxisGizmo xHandle, yHandle, zHandle;
     PlaneGizmo xyHandle, xzHandle, yzHandle;
@@ -143,47 +143,47 @@ public class TransformGizmo : MonoBehaviour
         float ringRadius = 1.0f * 1.2f;
         Vector3 center = target.position;
         bool hoverFound = false;
-        if (enableRotateY && yRotHandle != null && yRotHandle.IsMouseOnGizmo(center, transform.up, ringRadius))
+        if (rotateY && yRotHandle != null && yRotHandle.IsMouseOnGizmo(center, transform.up, ringRadius))
         {
             yRotHandle.SetMaterialColor(Color.yellow);
             hoverFound = true;
         }
-        else if (enableRotateX && xRotHandle != null && xRotHandle.IsMouseOnGizmo(center, transform.right, ringRadius))
+        else if (rotateX && xRotHandle != null && xRotHandle.IsMouseOnGizmo(center, transform.right, ringRadius))
         {
             xRotHandle.SetMaterialColor(Color.yellow);
             hoverFound = true;
         }
-        else if (enableRotateZ && zRotHandle != null && zRotHandle.IsMouseOnGizmo(center, transform.forward, ringRadius))
+        else if (rotateZ && zRotHandle != null && zRotHandle.IsMouseOnGizmo(center, transform.forward, ringRadius))
         {
             zRotHandle.SetMaterialColor(Color.yellow);
             hoverFound = true;
         }
-        else if (enableTranslateX && xHandle != null && xHandle.IsMouseOnAxisGizmo(target.position, transform.right))
+        else if (translateX && xHandle != null && xHandle.IsMouseOnAxisGizmo(target.position, transform.right))
         {
             xHandle.SetMaterialColor(Color.yellow);
             hoverFound = true;
         }
-        else if (enableTranslateY && yHandle != null && yHandle.IsMouseOnAxisGizmo(target.position, transform.up))
+        else if (translateY && yHandle != null && yHandle.IsMouseOnAxisGizmo(target.position, transform.up))
         {
             yHandle.SetMaterialColor(Color.yellow);
             hoverFound = true;
         }
-        else if (enableTranslateZ && zHandle != null && zHandle.IsMouseOnAxisGizmo(target.position, transform.forward))
+        else if (translateZ && zHandle != null && zHandle.IsMouseOnAxisGizmo(target.position, transform.forward))
         {
             zHandle.SetMaterialColor(Color.yellow);
             hoverFound = true;
         }
-        else if (enableTranslateX && enableTranslateY && xyHandle != null && xyHandle.IsMouseOnPlaneGizmo())
+        else if (translateX && translateY && xyHandle != null && xyHandle.IsMouseOnPlaneGizmo())
         {
             xyHandle.SetMaterialColor(Color.yellow);
             hoverFound = true;
         }
-        else if (enableTranslateX && enableTranslateZ && xzHandle != null && xzHandle.IsMouseOnPlaneGizmo())
+        else if (translateX && translateZ && xzHandle != null && xzHandle.IsMouseOnPlaneGizmo())
         {
             xzHandle.SetMaterialColor(Color.yellow);
             hoverFound = true;
         }
-        else if (enableTranslateY && enableTranslateZ && yzHandle != null && yzHandle.IsMouseOnPlaneGizmo())
+        else if (translateY && translateZ && yzHandle != null && yzHandle.IsMouseOnPlaneGizmo())
         {
             yzHandle.SetMaterialColor(Color.yellow);
             hoverFound = true;
@@ -196,7 +196,7 @@ public class TransformGizmo : MonoBehaviour
     {
         float ringRadius = 1.0f * 1.2f;
         Vector3 center = target.position;
-        if (enableRotateY && yRotHandle != null && yRotHandle.IsMouseOnGizmo(center, transform.up, ringRadius))
+        if (rotateY && yRotHandle != null && yRotHandle.IsMouseOnGizmo(center, transform.up, ringRadius))
         {
             activeRotate = yRotHandle;
             rotationPlane = new Plane(transform.up, center);
@@ -208,7 +208,7 @@ public class TransformGizmo : MonoBehaviour
                 return true;
             }
         }
-        else if (enableRotateX && xRotHandle != null && xRotHandle.IsMouseOnGizmo(center, transform.right, ringRadius))
+        else if (rotateX && xRotHandle != null && xRotHandle.IsMouseOnGizmo(center, transform.right, ringRadius))
         {
             activeRotate = xRotHandle;
             rotationPlane = new Plane(transform.right, center);
@@ -220,7 +220,7 @@ public class TransformGizmo : MonoBehaviour
                 return true;
             }
         }
-        else if (enableRotateZ && zRotHandle != null && zRotHandle.IsMouseOnGizmo(center, transform.forward, ringRadius))
+        else if (rotateZ && zRotHandle != null && zRotHandle.IsMouseOnGizmo(center, transform.forward, ringRadius))
         {
             activeRotate = zRotHandle;
             rotationPlane = new Plane(transform.forward, center);
@@ -232,7 +232,7 @@ public class TransformGizmo : MonoBehaviour
                 return true;
             }
         }
-        else if (enableTranslateX && xHandle != null && xHandle.IsMouseOnAxisGizmo(target.position, transform.right))
+        else if (translateX && xHandle != null && xHandle.IsMouseOnAxisGizmo(target.position, transform.right))
         {
             activeAxis = xHandle;
             Vector3 axisDir = transform.TransformDirection(activeAxis.WorldDirection).normalized;
@@ -240,7 +240,7 @@ public class TransformGizmo : MonoBehaviour
             objectStartPos = target.position;
             return true;
         }
-        else if (enableTranslateY && yHandle != null && yHandle.IsMouseOnAxisGizmo(target.position, transform.up))
+        else if (translateY && yHandle != null && yHandle.IsMouseOnAxisGizmo(target.position, transform.up))
         {
             activeAxis = yHandle;
             Vector3 axisDir = transform.TransformDirection(activeAxis.WorldDirection).normalized;
@@ -248,7 +248,7 @@ public class TransformGizmo : MonoBehaviour
             objectStartPos = target.position;
             return true;
         }
-        else if (enableTranslateZ && zHandle != null && zHandle.IsMouseOnAxisGizmo(target.position, transform.forward))
+        else if (translateZ && zHandle != null && zHandle.IsMouseOnAxisGizmo(target.position, transform.forward))
         {
             activeAxis = zHandle;
             Vector3 axisDir = transform.TransformDirection(activeAxis.WorldDirection).normalized;
@@ -256,7 +256,7 @@ public class TransformGizmo : MonoBehaviour
             objectStartPos = target.position;
             return true;
         }
-        else if (enableTranslateX && enableTranslateY && xyHandle != null && xyHandle.IsMouseOnPlaneGizmo())
+        else if (translateX && translateY && xyHandle != null && xyHandle.IsMouseOnPlaneGizmo())
         {
             activePlane = xyHandle;
             Plane dragPlane = activePlane.GetDragPlane(transform, target.position);
@@ -271,7 +271,7 @@ public class TransformGizmo : MonoBehaviour
             objectStartPos = target.position;
             return true;
         }
-        else if (enableTranslateX && enableTranslateZ && xzHandle != null && xzHandle.IsMouseOnPlaneGizmo())
+        else if (translateX && translateZ && xzHandle != null && xzHandle.IsMouseOnPlaneGizmo())
         {
             activePlane = xzHandle;
             Plane dragPlane = activePlane.GetDragPlane(transform, target.position);
@@ -286,7 +286,7 @@ public class TransformGizmo : MonoBehaviour
             objectStartPos = target.position;
             return true;
         }
-        else if (enableTranslateY && enableTranslateZ && yzHandle != null && yzHandle.IsMouseOnPlaneGizmo())
+        else if (translateY && translateZ && yzHandle != null && yzHandle.IsMouseOnPlaneGizmo())
         {
             activePlane = yzHandle;
             Plane dragPlane = activePlane.GetDragPlane(transform, target.position);
@@ -405,47 +405,47 @@ public class TransformGizmo : MonoBehaviour
         handleConfigs.Add(new GizmoHandleConfig
         {
             handleObj = xHandle?.gameObject,
-            visibleCondition = g => g.enableTranslateX
+            visibleCondition = g => g.translateX
         });
         handleConfigs.Add(new GizmoHandleConfig
         {
             handleObj = yHandle?.gameObject,
-            visibleCondition = g => g.enableTranslateY
+            visibleCondition = g => g.translateY
         });
         handleConfigs.Add(new GizmoHandleConfig
         {
             handleObj = zHandle?.gameObject,
-            visibleCondition = g => g.enableTranslateZ
+            visibleCondition = g => g.translateZ
         });
         handleConfigs.Add(new GizmoHandleConfig
         {
             handleObj = xyHandle?.gameObject,
-            visibleCondition = g => g.enableTranslateX && g.enableTranslateY
+            visibleCondition = g => g.translateX && g.translateY
         });
         handleConfigs.Add(new GizmoHandleConfig
         {
             handleObj = xzHandle?.gameObject,
-            visibleCondition = g => g.enableTranslateX && g.enableTranslateZ
+            visibleCondition = g => g.translateX && g.translateZ
         });
         handleConfigs.Add(new GizmoHandleConfig
         {
             handleObj = yzHandle?.gameObject,
-            visibleCondition = g => g.enableTranslateY && g.enableTranslateZ
+            visibleCondition = g => g.translateY && g.translateZ
         });
         handleConfigs.Add(new GizmoHandleConfig
         {
             handleObj = xRotHandle?.gameObject,
-            visibleCondition = g => g.enableRotateX
+            visibleCondition = g => g.rotateX
         });
         handleConfigs.Add(new GizmoHandleConfig
         {
             handleObj = yRotHandle?.gameObject,
-            visibleCondition = g => g.enableRotateY
+            visibleCondition = g => g.rotateY
         });
         handleConfigs.Add(new GizmoHandleConfig
         {
             handleObj = zRotHandle?.gameObject,
-            visibleCondition = g => g.enableRotateZ
+            visibleCondition = g => g.rotateZ
         });
     }
 
