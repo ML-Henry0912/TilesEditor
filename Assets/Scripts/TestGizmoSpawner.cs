@@ -1,3 +1,8 @@
+// =============================================
+// 檔案名稱：TestGizmoSpawner.cs
+// 功能說明：測試用腳本，負責在場景中產生並初始化 Gizmo 物件，
+//          方便開發與測試 Gizmo 功能。
+// =============================================
 using UnityEngine;
 
 public class TestGizmoSpawner : MonoBehaviour

@@ -1,3 +1,8 @@
+// =============================================
+// 檔案名稱：TransformGizmo.cs
+// 功能說明：主控 Gizmo，整合軸、平面、旋轉等子 Gizmo，
+//          處理物件的移動、旋轉、縮放與互動邏輯。
+// =============================================
 using System;
 using UnityEngine;
 
@@ -18,9 +23,9 @@ public class TransformGizmo : MonoBehaviour
     public bool enableRotateY = true;
     public bool enableRotateZ = true;
 
-    private GizmoBase xHandle, yHandle, zHandle;
-    private GizmoBase xyHandle, xzHandle, yzHandle;
-    private GizmoBase xRotateHandle, yRotateHandle, zRotateHandle;
+    private AxisGizmo xHandle, yHandle, zHandle;
+    private PlaneGizmo xyHandle, xzHandle, yzHandle;
+    private RotateGizmo xRotateHandle, yRotateHandle, zRotateHandle;
 
     private Vector3 dragStartPos, objectStartPos;
     private AxisGizmo activeAxis;
@@ -33,7 +38,7 @@ public class TransformGizmo : MonoBehaviour
 
     private Action action;
 
-    public bool initialized = false;
+    bool initialized = false;
 
     public void Initialize(Transform target, Camera cam)
     {
@@ -61,6 +66,11 @@ public class TransformGizmo : MonoBehaviour
         yHandle?.gameObject.SetActive(enableTranslateY);
         zHandle?.gameObject.SetActive(enableTranslateZ);
 
+        // 只有兩軸都啟動才顯示對應的 plane
+        xyHandle?.gameObject.SetActive(enableTranslateX && enableTranslateY);
+        xzHandle?.gameObject.SetActive(enableTranslateX && enableTranslateZ);
+        yzHandle?.gameObject.SetActive(enableTranslateY && enableTranslateZ);
+
         xRotateHandle?.gameObject.SetActive(enableRotateX);
         yRotateHandle?.gameObject.SetActive(enableRotateY);
         zRotateHandle?.gameObject.SetActive(enableRotateZ);
@@ -70,27 +80,25 @@ public class TransformGizmo : MonoBehaviour
     {
         if (Input.GetMouseButtonDown(0))
         {
-            // 先判斷是否在旋轉 Gizmo 上（不使用 Collider）
-            // 順序：Y > X > Z（可依需求調整）
-            float ringRadius = 1.0f * 1.2f; // Torus 半徑 * scale
-            float thickness = 16f; // 可互動寬度（像素，放寬為原本兩倍）
+            // 先判斷旋轉 Gizmo ...（原本的程式碼）
+            float ringRadius = 1.0f * 1.2f;
             Vector3 center = target.position;
             bool found = false;
-            if (enableRotateY && yRotateHandle != null && RotateGizmo.IsMouseOnGizmo(cam, center, transform.up, ringRadius, thickness))
+            if (enableRotateY && yRotateHandle != null && yRotateHandle.IsMouseOnGizmo(center, transform.up, ringRadius))
             {
-                activeRotate = (RotateGizmo)yRotateHandle;
+                activeRotate = yRotateHandle;
                 rotationPlane = new Plane(transform.up, center);
                 found = true;
             }
-            else if (enableRotateX && xRotateHandle != null && RotateGizmo.IsMouseOnGizmo(cam, center, transform.right, ringRadius, thickness))
+            else if (enableRotateX && xRotateHandle != null && xRotateHandle.IsMouseOnGizmo(center, transform.right, ringRadius))
             {
-                activeRotate = (RotateGizmo)xRotateHandle;
+                activeRotate = xRotateHandle;
                 rotationPlane = new Plane(transform.right, center);
                 found = true;
             }
-            else if (enableRotateZ && zRotateHandle != null && RotateGizmo.IsMouseOnGizmo(cam, center, transform.forward, ringRadius, thickness))
+            else if (enableRotateZ && zRotateHandle != null && zRotateHandle.IsMouseOnGizmo(center, transform.forward, ringRadius))
             {
-                activeRotate = (RotateGizmo)zRotateHandle;
+                activeRotate = zRotateHandle;
                 rotationPlane = new Plane(transform.forward, center);
                 found = true;
             }
@@ -106,32 +114,62 @@ public class TransformGizmo : MonoBehaviour
                 return;
             }
 
-            // 其餘 Gizmo（軸、平面）仍用原本 Collider 判斷
-            Ray ray2 = cam.ScreenPointToRay(Input.mousePosition);
-            if (!Physics.Raycast(ray2, out RaycastHit hit)) return;
-            if (!hit.collider.CompareTag(GIZMO_TAG)) return;
-
-            if (hit.transform.TryGetComponent(out AxisGizmo axis))
+            // 軸向 Gizmo 數學判斷（優先於 Collider）
+            if (enableTranslateX && xHandle != null && xHandle.IsMouseOnAxisGizmo(target.position, transform.right))
             {
-                activeAxis = axis;
-                Vector3 axisDir = transform.TransformDirection(axis.WorldDirection).normalized;
-                dragStartPos = GetClosestPointOnAxis(ray2, target.position, axisDir);
+                activeAxis = xHandle;
+                Vector3 axisDir = transform.TransformDirection(activeAxis.WorldDirection).normalized;
+                dragStartPos = GetClosestPointOnAxis(cam.ScreenPointToRay(Input.mousePosition), target.position, axisDir);
+                objectStartPos = target.position;
+                action = OnDragAxis;
+                return;
+            }
+            if (enableTranslateY && yHandle != null && yHandle.IsMouseOnAxisGizmo(target.position, transform.up))
+            {
+                activeAxis = yHandle;
+                Vector3 axisDir = transform.TransformDirection(activeAxis.WorldDirection).normalized;
+                dragStartPos = GetClosestPointOnAxis(cam.ScreenPointToRay(Input.mousePosition), target.position, axisDir);
+                objectStartPos = target.position;
+                action = OnDragAxis;
+                return;
+            }
+            if (enableTranslateZ && zHandle != null && zHandle.IsMouseOnAxisGizmo(target.position, transform.forward))
+            {
+                activeAxis = zHandle;
+                Vector3 axisDir = transform.TransformDirection(activeAxis.WorldDirection).normalized;
+                dragStartPos = GetClosestPointOnAxis(cam.ScreenPointToRay(Input.mousePosition), target.position, axisDir);
                 objectStartPos = target.position;
                 action = OnDragAxis;
                 return;
             }
 
-            if (hit.transform.TryGetComponent(out PlaneGizmo plane))
+            // 平面 Gizmo 數學判斷
+            if (enableTranslateX && enableTranslateY && xyHandle != null && xyHandle.IsMouseOnPlaneGizmo(target.position, transform.right, transform.up))
             {
-                activePlane = plane;
-                Plane dragPlane = plane.GetDragPlane(transform, target.position);
-                if (dragPlane.Raycast(ray2, out float enter))
-                {
-                    dragStartPos = ray2.GetPoint(enter);
-                    objectStartPos = target.position;
-                    action = OnDragPlane;
-                    return;
-                }
+                activePlane = xyHandle;
+                Plane dragPlane = activePlane.GetDragPlane(transform, target.position);
+                dragStartPos = cam.ScreenPointToRay(Input.mousePosition).GetPoint(0f); // 只要有點到即可
+                objectStartPos = target.position;
+                action = OnDragPlane;
+                return;
+            }
+            if (enableTranslateX && enableTranslateZ && xzHandle != null && xzHandle.IsMouseOnPlaneGizmo(target.position, transform.right, transform.forward))
+            {
+                activePlane = xzHandle;
+                Plane dragPlane = activePlane.GetDragPlane(transform, target.position);
+                dragStartPos = cam.ScreenPointToRay(Input.mousePosition).GetPoint(0f);
+                objectStartPos = target.position;
+                action = OnDragPlane;
+                return;
+            }
+            if (enableTranslateY && enableTranslateZ && yzHandle != null && yzHandle.IsMouseOnPlaneGizmo(target.position, transform.up, transform.forward))
+            {
+                activePlane = yzHandle;
+                Plane dragPlane = activePlane.GetDragPlane(transform, target.position);
+                dragStartPos = cam.ScreenPointToRay(Input.mousePosition).GetPoint(0f);
+                objectStartPos = target.position;
+                action = OnDragPlane;
+                return;
             }
         }
         else
@@ -140,35 +178,58 @@ public class TransformGizmo : MonoBehaviour
             xyHandle?.ResetColor(); xzHandle?.ResetColor(); yzHandle?.ResetColor();
             xRotateHandle?.ResetColor(); yRotateHandle?.ResetColor(); zRotateHandle?.ResetColor();
 
-            // Hover 效果改為數學判斷（旋轉環優先）
+            // Hover 效果：旋轉環優先
             float ringRadius = 1.0f * 1.2f;
-            float thickness = 16f;
             Vector3 center = target.position;
             bool hoverFound = false;
-            if (enableRotateY && yRotateHandle != null && RotateGizmo.IsMouseOnGizmo(cam, center, transform.up, ringRadius, thickness))
+            if (enableRotateY && yRotateHandle != null && yRotateHandle.IsMouseOnGizmo(center, transform.up, ringRadius))
             {
                 yRotateHandle.SetMaterialColor(Color.yellow);
                 hoverFound = true;
             }
-            else if (enableRotateX && xRotateHandle != null && RotateGizmo.IsMouseOnGizmo(cam, center, transform.right, ringRadius, thickness))
+            else if (enableRotateX && xRotateHandle != null && xRotateHandle.IsMouseOnGizmo(center, transform.right, ringRadius))
             {
                 xRotateHandle.SetMaterialColor(Color.yellow);
                 hoverFound = true;
             }
-            else if (enableRotateZ && zRotateHandle != null && RotateGizmo.IsMouseOnGizmo(cam, center, transform.forward, ringRadius, thickness))
+            else if (enableRotateZ && zRotateHandle != null && zRotateHandle.IsMouseOnGizmo(center, transform.forward, ringRadius))
             {
                 zRotateHandle.SetMaterialColor(Color.yellow);
                 hoverFound = true;
             }
-            if (hoverFound) return;
-
-            // 其餘 Gizmo 維持原本 Collider 判斷
-            Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-            if (Physics.Raycast(ray, out RaycastHit hit) && hit.collider.CompareTag(GIZMO_TAG))
+            // 軸向 hover
+            else if (enableTranslateX && xHandle != null && xHandle.IsMouseOnAxisGizmo(target.position, transform.right))
             {
-                if (hit.transform.TryGetComponent(out GizmoBase gizmo))
-                    gizmo.SetMaterialColor(Color.yellow);
+                xHandle.SetMaterialColor(Color.yellow);
+                hoverFound = true;
             }
+            else if (enableTranslateY && yHandle != null && yHandle.IsMouseOnAxisGizmo(target.position, transform.up))
+            {
+                yHandle.SetMaterialColor(Color.yellow);
+                hoverFound = true;
+            }
+            else if (enableTranslateZ && zHandle != null && zHandle.IsMouseOnAxisGizmo(target.position, transform.forward))
+            {
+                zHandle.SetMaterialColor(Color.yellow);
+                hoverFound = true;
+            }
+            // 平面 hover
+            if (enableTranslateX && enableTranslateY && xyHandle != null && xyHandle.IsMouseOnPlaneGizmo(target.position, transform.right, transform.up))
+            {
+                xyHandle.SetMaterialColor(Color.yellow);
+                hoverFound = true;
+            }
+            else if (enableTranslateX && enableTranslateZ && xzHandle != null && xzHandle.IsMouseOnPlaneGizmo(target.position, transform.right, transform.forward))
+            {
+                xzHandle.SetMaterialColor(Color.yellow);
+                hoverFound = true;
+            }
+            else if (enableTranslateY && enableTranslateZ && yzHandle != null && yzHandle.IsMouseOnPlaneGizmo(target.position, transform.up, transform.forward))
+            {
+                yzHandle.SetMaterialColor(Color.yellow);
+                hoverFound = true;
+            }
+            if (hoverFound) return;
         }
     }
 
@@ -280,7 +341,7 @@ public class TransformGizmo : MonoBehaviour
         zRotateHandle = CreateRotateHandle("Z_Rotate", Vector3.zero, Quaternion.Euler(90, 0, 0), Color.blue, RotateGizmo.Axis.Z);
     }
 
-    private GizmoBase CreateAxisHandle(string name, Vector3 localPos, Quaternion localRot, Color color, AxisGizmo.Axis axis)
+    private AxisGizmo CreateAxisHandle(string name, Vector3 localPos, Quaternion localRot, Color color, AxisGizmo.Axis axis)
     {
         GameObject go = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
         go.name = name;
@@ -289,17 +350,13 @@ public class TransformGizmo : MonoBehaviour
         go.transform.localPosition = localPos;
         go.transform.localRotation = localRot;
         go.transform.localScale = new Vector3(0.1f, 0.5f, 0.1f);
-        DestroyImmediate(go.GetComponent<Collider>());
-
-        go.AddComponent<CapsuleCollider>().isTrigger = true;
         var axisGizmo = go.AddComponent<AxisGizmo>();
-        axisGizmo.Initialize(axis, color);
+        axisGizmo.Initialize(axis, color, cam, 1.0f, 16f);
         return axisGizmo;
     }
 
-    private GizmoBase CreatePlaneHandle(string name, Vector3 localPos, Quaternion localRot, Color color, PlaneGizmo.PlaneType type)
+    private PlaneGizmo CreatePlaneHandle(string name, Vector3 localPos, Quaternion localRot, Color color, PlaneGizmo.PlaneType type)
     {
-        // 正面
         GameObject go = GameObject.CreatePrimitive(PrimitiveType.Quad);
         go.name = name;
         go.tag = GIZMO_TAG;
@@ -307,28 +364,13 @@ public class TransformGizmo : MonoBehaviour
         go.transform.localPosition = localPos;
         go.transform.localRotation = localRot;
         go.transform.localScale = Vector3.one * 0.25f;
-        DestroyImmediate(go.GetComponent<Collider>());
-        go.AddComponent<MeshCollider>().convex = true;
         var planeGizmo = go.AddComponent<PlaneGizmo>();
-        planeGizmo.Initialize(type, color);
-
-        // 背面
-        GameObject back = GameObject.CreatePrimitive(PrimitiveType.Quad);
-        back.name = name + "_Back";
-        back.tag = GIZMO_TAG;
-        back.transform.SetParent(transform);
-        back.transform.localPosition = localPos;
-        back.transform.localRotation = localRot * Quaternion.Euler(0, 180, 0);
-        back.transform.localScale = Vector3.one * 0.25f;
-        DestroyImmediate(back.GetComponent<Collider>());
-        back.AddComponent<MeshCollider>().convex = true;
-        var planeGizmoBack = back.AddComponent<PlaneGizmo>();
-        planeGizmoBack.Initialize(type, color);
-
+        planeGizmo.Initialize(type, color, cam, 0.25f);
+        // 背面同理...
         return planeGizmo;
     }
 
-    private GizmoBase CreateRotateHandle(string name, Vector3 localPos, Quaternion localRot, Color color, RotateGizmo.Axis axis)
+    private RotateGizmo CreateRotateHandle(string name, Vector3 localPos, Quaternion localRot, Color color, RotateGizmo.Axis axis)
     {
         GameObject go = new GameObject(name);
         go.tag = GIZMO_TAG;
@@ -336,13 +378,11 @@ public class TransformGizmo : MonoBehaviour
         go.transform.localPosition = localPos;
         go.transform.localRotation = localRot;
         go.transform.localScale = Vector3.one * 1.2f;
-
         var mf = go.AddComponent<MeshFilter>();
         var mr = go.AddComponent<MeshRenderer>();
         mf.mesh = TorusMeshGenerator.Generate(1.0f, 0.05f, 64, 12);
-
         var gizmo = go.AddComponent<RotateGizmo>();
-        gizmo.Initialize(axis, color);
+        gizmo.Initialize(axis, color, cam, 16f);
         return gizmo;
     }
 

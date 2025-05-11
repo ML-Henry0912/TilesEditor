@@ -1,3 +1,8 @@
+// =============================================
+// 檔案名稱：RotateGizmo.cs
+// 功能說明：用於旋轉操作的 Gizmo，顯示三個圓環，
+//          讓使用者可以分別對 X、Y、Z 軸進行精確旋轉。
+// =============================================
 using UnityEngine;
 
 public class RotateGizmo : GizmoBase
@@ -8,7 +13,10 @@ public class RotateGizmo : GizmoBase
     [HideInInspector]
     public Vector3 WorldAxis;
 
-    public void Initialize(Axis axisType, Color color)
+    private Camera cam;
+    private float thickness;
+
+    public void Initialize(Axis axisType, Color color, Camera cam, float thickness)
     {
         axis = axisType;
         baseColor = color;
@@ -20,6 +28,8 @@ public class RotateGizmo : GizmoBase
             case Axis.Y: WorldAxis = Vector3.up; break;
             case Axis.Z: WorldAxis = Vector3.forward; break;
         }
+        this.cam = cam;
+        this.thickness = thickness;
     }
 
     protected override Material CreateDefaultMaterial()
@@ -30,13 +40,11 @@ public class RotateGizmo : GizmoBase
     /// <summary>
     /// 判斷滑鼠是否在螢幕上的旋轉 Gizmo 橢圓環上（不使用 Collider）。
     /// </summary>
-    /// <param name="cam">攝影機</param>
     /// <param name="circleCenter">圓心（世界座標）</param>
     /// <param name="circleNormal">圓面法向量（世界座標）</param>
     /// <param name="radius">圓半徑</param>
-    /// <param name="thickness">橢圓環寬度（像素）</param>
     /// <returns>滑鼠是否在橢圓環上</returns>
-    public static bool IsMouseOnGizmo(Camera cam, Vector3 circleCenter, Vector3 circleNormal, float radius, float thickness = 8f)
+    public bool IsMouseOnGizmo(Vector3 circleCenter, Vector3 circleNormal, float radius)
     {
         var ellipse = EllipseProjectionUtility.ProjectCircleToScreen(cam, circleCenter, circleNormal, radius);
         Vector2 mousePos = Input.mousePosition;
