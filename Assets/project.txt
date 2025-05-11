@@ -1,0 +1,165 @@
+# TilesEditor 專案需求文件
+
+---
+
+📄 **專案簡介**
+
+TilesEditor 是一個基於 Unity 的 WebGL 磁磚排列設計工具，允許使用者在虛擬牆面上設計、編輯和匯出磁磚排列效果。  
+使用者可以選擇各種磁磚模型，在網格系統上精確排列，自訂材質與擺放方式，最終匯出為 3D 模型或高解析度渲染圖。  
+支援多牆面編輯，適合室內設計、裝修規劃及磁磚銷售展示使用。
+
+---
+
+🛠️ **TilesEditor 專案主要需求**
+
+---
+
+## 1. 主要功能模組（模組化規劃）
+
+1. **WallEditorManager（牆面管理）**
+   - 在虛擬牆面上排列磁磚
+   - 設定牆面尺寸（公分/公尺）
+   - 支援多牆面（最多四面）
+   - 可調整網格顯示與間距
+
+2. **TilePlacementSystem（磁磚擺放）**
+   - 選取磁磚模型
+   - 網格吸附
+   - 防止磁磚重疊（Collider偵測）
+   - 放置預覽（綠色/紅色提示）
+
+3. **TileManipulationTool（磁磚操作與Gizmo控制）**
+   - 單選、多選（框選 / Shift）
+   - 平移、旋轉（限制於牆面平面）
+   - 複製、貼上、智能排列、批量調整
+   - 顯示可視化 Gizmo（Move/Rotate）
+   - 支援單軸移動與旋轉（X、Y、Z 軸）
+   - 支援 Snap 功能（平移單位 / 旋轉單位）
+   - 支援多物件同步操作
+   - 支援 World / Local 座標系切換
+   - 支援地面/牆面貼齊模式（移動自動貼合）
+   - 操作中Gizmo高亮提示
+   - 支援快捷鍵操作：
+     - `W` 切換到移動模式
+     - `E` 切換到旋轉模式
+     - `G` 顯示/隱藏 Gizmo
+     - `Ctrl+C` 複製 / `Ctrl+V` 貼上
+     - `Delete` 刪除
+   - 操作過程中自動鎖定相機，避免誤移動
+   - 支援Undo/Redo（所有操作記錄）
+   - 支援移動/旋轉結束時自動檢測碰撞
+
+4. **CollisionDetectionManager（碰撞與空間優化）**
+   - 支援 MeshCollider/BoxCollider/CapsuleCollider
+   - 使用八叉樹或網格分割演算法提升效能
+
+5. **ModelLibraryManager（3D模型管理）**
+   - 內建磁磚庫
+   - 支援上傳 .fbx/.glb
+   - 上傳自動處理 Collider、Pivot
+   - 模型分類與搜尋
+
+6. **MaterialEditor（材質與貼圖管理）**
+   - 修改基本顏色、金屬度、粗糙度
+   - 支援自訂貼圖
+   - 即時預覽材質變更
+
+7. **ModelExporter（模型匯出）**
+   - 合併編輯後磁磚，匯出 .fbx/.glb/.obj
+   - 保持材質貼圖
+   - 高解析度渲染圖輸出
+
+9. **ProjectSaveLoadManager（專案儲存與載入）**
+   - JSON格式存儲
+   - 支援自動儲存與備份
+
+10. **UndoRedoSystem（操作回溯）**
+    - 支援至少10層 Undo/Redo
+
+11. **SnapshotManager（快照與版本控制）**
+    - 快速儲存快照
+    - 快照對比與版本切換
+
+12. **CameraController（相機控制）**
+    - 支援牆面視角旋轉、縮放
+    - 預設視角快速切換（正視圖、斜視圖）
+
+13. **UIFeedbackManager（使用者介面提示）**
+    - 操作狀態顯示
+    - 成功/失敗提示
+    - 新手教學流程 UserGuideManager
+
+14. **WebGLManager（WebGL特化）**
+    - 支援檔案上傳與下載
+    - 記憶體管理與基本資源處理
+
+15. **EditorUtilities（公用工具庫）**
+    - 數學、碰撞輔助
+    - 檔案處理與格式轉換
+
+---
+
+## 2. Prefab與資源規範
+
+- Prefab必須含Collider
+- 複雜形狀使用 MeshCollider（注意效能）
+- Pivot點設於底部中心
+- 命名規範：
+  - 預設磁磚：Tile_Square01、Tile_Hexagon01
+  - 上傳模型：Upload_20250428_1530（時間戳）
+- 模型尺寸規範：
+  - 1 Unity單位 = 1公分
+  - 預設尺寸範圍：1x1 cm ～ 100x100 cm
+  - 上傳模型最大10MB
+  - 建議面數不超過100,000 polygons
+
+---
+
+## 3. 儲存與匯出規範
+
+- 專案儲存格式：JSON
+- 匯出格式：
+  - `.fbx`（版本：FBX 2013）
+  - `.glb`（符合 glTF 2.0）
+  - `.obj`
+- 匯出需保留材質與貼圖資訊
+- 高解析度渲染圖輸出選項
+
+---
+
+📂 **專案資料夾結構**
+
+```
+TilesEditor/Assets/
+├── Scenes/
+│   ├── MainScene.unity
+│   ├── LoadingScene.unity
+│
+├── Prefabs/
+│   ├── Tiles/
+│   ├── UI/
+│   ├── Environment/
+│
+├── Models/
+│   ├── DefaultTiles/
+│   └── UserUploads/
+│       ├── Upload_20250428_1530/
+│       └── Upload_20250429_1200/
+│
+├── Materials/
+│   ├── DefaultMaterials/
+│   └── UploadMaterials/
+│
+├── Scripts/
+│   ├── Managers/
+│   ├── Systems/
+│   ├── UI/
+│   └── Utilities/
+│
+├── UI/
+│   ├── Panels/
+│   ├── Icons/
+│   ├── Fonts/
+│   └── Sprites/
+│
+└── Editor/
