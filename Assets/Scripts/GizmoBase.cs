@@ -1,20 +1,27 @@
 using UnityEngine;
 
-[RequireComponent(typeof(Collider))]
+[RequireComponent(typeof(Collider), typeof(MeshRenderer))]
 public abstract class GizmoBase : MonoBehaviour
 {
     public Color baseColor;
 
     protected Material material;
+    protected MeshRenderer meshRenderer;
+
+    protected virtual void Awake()
+    {
+        meshRenderer = GetComponent<MeshRenderer>();
+        material = meshRenderer.material;
+    }
 
     public virtual void SetMaterialColor(Color color)
     {
         if (material == null)
         {
-            var renderer = GetComponent<MeshRenderer>();
             material = CreateDefaultMaterial();
-            renderer.material = material;
+            meshRenderer.material = material;
         }
+
         material.color = color;
     }
 
@@ -23,8 +30,5 @@ public abstract class GizmoBase : MonoBehaviour
         SetMaterialColor(baseColor);
     }
 
-    /// <summary>
-    /// 子類別要實作自己的初始材質
-    /// </summary>
     protected abstract Material CreateDefaultMaterial();
 }

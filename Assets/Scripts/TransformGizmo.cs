@@ -3,6 +3,8 @@ using UnityEngine;
 
 public class TransformGizmo : MonoBehaviour
 {
+    public const string GIZMO_TAG = "GizmoHandle";
+
     public Transform target;
     public Camera cam;
 
@@ -21,20 +23,12 @@ public class TransformGizmo : MonoBehaviour
     private AxisGizmo activeAxis;
     private PlaneGizmo activePlane;
 
-    private Material highlightMat;
-
-    Action actionHandleInputAxis;
-    Action actionHandleInputPlane;
-    Action actionHover;
+    Action action;
 
     void Start()
     {
-        highlightMat = new Material(Shader.Find("Unlit/Color")) { color = Color.yellow };
         CreateAllHandles();
-
-        actionHandleInputAxis = MouseDownAxis;
-        actionHandleInputPlane = MouseDownPlane;
-        actionHover = HandleHover;
+        action = CheckMouseDown;
     }
 
     void Update()
@@ -46,11 +40,10 @@ public class TransformGizmo : MonoBehaviour
 
         UpdateHandleVisibility();
 
-        actionHandleInputAxis?.Invoke();
-        actionHandleInputPlane?.Invoke();
+        action?.Invoke();
 
         if (currentDrag == DragMode.None)
-            actionHover?.Invoke();
+            HandleHover();
     }
 
     void UpdateHandleVisibility()
@@ -60,15 +53,12 @@ public class TransformGizmo : MonoBehaviour
         zHandle?.gameObject.SetActive(enableTranslateZ);
     }
 
-    // -------------------------
-    // 軸向拖曳邏輯
-    // -------------------------
-    void MouseDownAxis()
+    void CheckMouseDown()
     {
         if (!Input.GetMouseButtonDown(0)) return;
 
         Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-        if (Physics.Raycast(ray, out RaycastHit hit) && hit.collider.CompareTag("GizmoHandle"))
+        if (Physics.Raycast(ray, out RaycastHit hit) && hit.collider.CompareTag(GIZMO_TAG))
         {
             AxisGizmo axis = hit.transform.GetComponent<AxisGizmo>();
             if (axis != null)
@@ -78,8 +68,23 @@ public class TransformGizmo : MonoBehaviour
                 Vector3 axisDir = transform.TransformDirection(axis.WorldDirection).normalized;
                 dragStartPos = GetClosestPointOnAxis(ray, target.position, axisDir);
                 objectStartPos = target.position;
-
-                actionHandleInputAxis = OnDragAxis;
+                action = OnDragAxis;
+            }
+            else
+            {
+                PlaneGizmo plane = hit.transform.GetComponent<PlaneGizmo>();
+                if (plane != null)
+                {
+                    currentDrag = DragMode.Plane;
+                    activePlane = plane;
+                    Plane dragPlane = plane.GetDragPlane(transform, target.position);
+                    if (dragPlane.Raycast(ray, out float enter))
+                    {
+                        dragStartPos = ray.GetPoint(enter);
+                        objectStartPos = target.position;
+                        action = OnDragPlane;
+                    }
+                }
             }
         }
     }
@@ -92,49 +97,14 @@ public class TransformGizmo : MonoBehaviour
         {
             Vector3 axisDir = transform.TransformDirection(activeAxis.WorldDirection).normalized;
             Vector3 current = GetClosestPointOnAxis(ray, objectStartPos, axisDir);
-            Vector3 delta = current - dragStartPos;
-
-            // ✅ 限制 delta 僅在軸方向上變化
-            delta = Vector3.Project(delta, axisDir);
+            Vector3 delta = Vector3.Project(current - dragStartPos, axisDir);
 
             if (delta.magnitude < 100f)
                 target.position = objectStartPos + delta;
         }
 
         if (Input.GetMouseButtonUp(0))
-        {
-            currentDrag = DragMode.None;
-            if (activeAxis != null) activeAxis.ResetColor();
-            activeAxis = null;
-            actionHandleInputAxis = MouseDownAxis;
-        }
-    }
-
-    // -------------------------
-    // 平面拖曳邏輯
-    // -------------------------
-    void MouseDownPlane()
-    {
-        if (!Input.GetMouseButtonDown(0)) return;
-
-        Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-        if (Physics.Raycast(ray, out RaycastHit hit) && hit.collider.CompareTag("GizmoHandle"))
-        {
-            PlaneGizmo plane = hit.transform.GetComponent<PlaneGizmo>();
-            if (plane != null)
-            {
-                currentDrag = DragMode.Plane;
-                activePlane = plane;
-
-                Plane dragPlane = plane.GetDragPlane(transform, target.position);
-                if (dragPlane.Raycast(ray, out float enter))
-                {
-                    dragStartPos = ray.GetPoint(enter);
-                    objectStartPos = target.position;
-                    actionHandleInputPlane = OnDragPlane;
-                }
-            }
-        }
+            EndDrag();
     }
 
     void OnDragPlane()
@@ -155,12 +125,18 @@ public class TransformGizmo : MonoBehaviour
         }
 
         if (Input.GetMouseButtonUp(0))
-        {
-            currentDrag = DragMode.None;
-            if (activePlane != null) activePlane.ResetColor();
-            activePlane = null;
-            actionHandleInputPlane = MouseDownPlane;
-        }
+            EndDrag();
+    }
+
+    void EndDrag()
+    {
+        activeAxis?.ResetColor();
+        activePlane?.ResetColor();
+
+        activeAxis = null;
+        activePlane = null;
+        currentDrag = DragMode.None;
+        action = CheckMouseDown;
     }
 
     void HandleHover()
@@ -168,10 +144,13 @@ public class TransformGizmo : MonoBehaviour
         ResetAllGizmoColors();
 
         Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-        if (Physics.Raycast(ray, out RaycastHit hit) && hit.collider.CompareTag("GizmoHandle"))
+        if (Physics.Raycast(ray, out RaycastHit hit) && hit.collider.CompareTag(GIZMO_TAG))
         {
-            var mr = hit.transform.GetComponent<MeshRenderer>();
-            if (mr != null) mr.material = highlightMat;
+            var gizmo = hit.transform.GetComponent<GizmoBase>();
+            if (gizmo != null)
+            {
+                gizmo.SetMaterialColor(Color.yellow);
+            }
         }
     }
 
@@ -179,11 +158,9 @@ public class TransformGizmo : MonoBehaviour
     {
         foreach (Transform t in transform)
         {
-            var axis = t.GetComponent<AxisGizmo>();
-            if (axis != null) axis.ResetColor();
-
-            var plane = t.GetComponent<PlaneGizmo>();
-            if (plane != null) plane.ResetColor();
+            var gizmo = t.GetComponent<GizmoBase>();
+            if (gizmo != null)
+                gizmo.ResetColor();
         }
     }
 
@@ -201,7 +178,7 @@ public class TransformGizmo : MonoBehaviour
     private Transform CreateAxisHandle(string name, Vector3 localPos, Quaternion localRot, Color color, AxisGizmo.Axis axis)
     {
         GameObject go = new GameObject(name);
-        go.tag = "GizmoHandle";
+        go.tag = GIZMO_TAG;
         go.transform.SetParent(transform);
         go.transform.localPosition = localPos;
         go.transform.localRotation = localRot;
@@ -224,7 +201,7 @@ public class TransformGizmo : MonoBehaviour
     private Transform CreatePlaneHandle(string name, Vector3 localPos, Quaternion localRot, Color color, PlaneGizmo.PlaneType type)
     {
         GameObject go = new GameObject(name);
-        go.tag = "GizmoHandle";
+        go.tag = GIZMO_TAG;
         go.transform.SetParent(transform);
         go.transform.localPosition = localPos;
         go.transform.localRotation = localRot;
