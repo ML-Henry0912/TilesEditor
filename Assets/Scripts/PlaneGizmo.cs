@@ -14,9 +14,28 @@ public class PlaneGizmo : GizmoBase
 
     protected override Material CreateDefaultMaterial()
     {
-        Material mat = new Material(Shader.Find("Unlit/Transparent"));
+        // 使用 Unlit/Color shader，支援顏色與透明度
+        Material mat = new Material(Shader.Find("Unlit/Color"));
         mat.SetInt("_Cull", (int)UnityEngine.Rendering.CullMode.Off); // 雙面可見
+        mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+        mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+        mat.SetInt("_ZWrite", 0);
+        mat.DisableKeyword("_ALPHATEST_ON");
+        mat.EnableKeyword("_ALPHABLEND_ON");
+        mat.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+        mat.renderQueue = 3000;
         return mat;
+    }
+
+    public override void SetMaterialColor(Color color)
+    {
+        if (material == null)
+        {
+            var renderer = GetComponent<MeshRenderer>();
+            material = CreateDefaultMaterial();
+            renderer.material = material;
+        }
+        material.SetColor("_Color", color); // 設置顏色與透明度
     }
 
     public Plane GetDragPlane(Transform gizmoRoot, Vector3 origin)

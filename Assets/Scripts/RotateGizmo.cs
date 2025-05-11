@@ -1,11 +1,12 @@
 using UnityEngine;
 
-public class AxisGizmo : GizmoBase
+public class RotateGizmo : GizmoBase
 {
     public enum Axis { X, Y, Z }
     public Axis axis;
 
-    [HideInInspector] public Vector3 WorldDirection;
+    [HideInInspector]
+    public Vector3 WorldAxis;
 
     public void Initialize(Axis axisType, Color color)
     {
@@ -15,9 +16,9 @@ public class AxisGizmo : GizmoBase
 
         switch (axis)
         {
-            case Axis.X: WorldDirection = Vector3.right; break;
-            case Axis.Y: WorldDirection = Vector3.up; break;
-            case Axis.Z: WorldDirection = Vector3.forward; break;
+            case Axis.X: WorldAxis = Vector3.right; break;
+            case Axis.Y: WorldAxis = Vector3.up; break;
+            case Axis.Z: WorldAxis = Vector3.forward; break;
         }
     }
 
