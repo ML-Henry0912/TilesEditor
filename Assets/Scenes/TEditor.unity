@@ -153,12 +153,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   target: {fileID: 2027569927}
   cam: {fileID: 1731656727}
-  enableTranslateX: 1
-  enableTranslateY: 1
-  enableTranslateZ: 1
+  enableTranslateX: 0
+  enableTranslateY: 0
+  enableTranslateZ: 0
   enableRotateX: 1
-  enableRotateY: 1
-  enableRotateZ: 1
+  enableRotateY: 0
+  enableRotateZ: 0
 --- !u!4 &1494640386
 Transform:
   m_ObjectHideFlags: 0

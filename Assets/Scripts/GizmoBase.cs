@@ -1,6 +1,6 @@
 using UnityEngine;
 
-[RequireComponent(typeof(Collider))]
+// [RequireComponent(typeof(Collider))]
 public abstract class GizmoBase : MonoBehaviour
 {
     public Color baseColor;
