@@ -57,7 +57,7 @@ public class TransformGizmo : MonoBehaviour
         CreateAllHandles();
         RegisterHandles();
         initialized = true;
-        action = StateIdle;
+        action = CheckHover;
     }
 
     void Update()
@@ -82,60 +82,54 @@ public class TransformGizmo : MonoBehaviour
     }
 
     // 狀態：Idle，檢查是否 hover 到 handle
-    void StateIdle()
+    void CheckHover()
     {
         if (TryHoverHandle())
         {
-            action = StateHover;
+            action = CheckMouseDown;
         }
     }
 
     // 狀態：Hover，檢查是否按下滑鼠進入拖曳
-    void StateHover()
+    void CheckMouseDown()
     {
         if (Input.GetMouseButtonDown(0))
         {
             if (TryBeginDrag())
             {
-                action = StateDrag;
+                action = OnDrag;
             }
         }
         else if (!TryHoverHandle())
         {
-            action = StateIdle;
+            action = CheckHover;
         }
     }
 
     // 狀態：Drag，執行拖曳/旋轉
-    void StateDrag()
+    void OnDrag()
     {
+        if (Input.GetMouseButtonUp(0))
+        {
+            EndDrag();
+            return;
+        }
+
         if (activeAxis != null)
         {
             DragAxis();
-            if (Input.GetMouseButtonUp(0))
-            {
-                EndDrag();
-            }
         }
         else if (activePlane != null)
         {
             DragPlane();
-            if (Input.GetMouseButtonUp(0))
-            {
-                EndDrag();
-            }
         }
         else if (activeRotate != null)
         {
             DragRotate();
-            if (Input.GetMouseButtonUp(0))
-            {
-                EndDrag();
-            }
         }
         else
         {
-            action = StateIdle;
+            action = CheckHover;
         }
     }
 
@@ -179,17 +173,17 @@ public class TransformGizmo : MonoBehaviour
             zHandle.SetMaterialColor(Color.yellow);
             hoverFound = true;
         }
-        else if (enableTranslateX && enableTranslateY && xyHandle != null && xyHandle.IsMouseOnPlaneGizmo(target.position, transform.right, transform.up))
+        else if (enableTranslateX && enableTranslateY && xyHandle != null && xyHandle.IsMouseOnPlaneGizmo())
         {
             xyHandle.SetMaterialColor(Color.yellow);
             hoverFound = true;
         }
-        else if (enableTranslateX && enableTranslateZ && xzHandle != null && xzHandle.IsMouseOnPlaneGizmo(target.position, transform.right, transform.forward))
+        else if (enableTranslateX && enableTranslateZ && xzHandle != null && xzHandle.IsMouseOnPlaneGizmo())
         {
             xzHandle.SetMaterialColor(Color.yellow);
             hoverFound = true;
         }
-        else if (enableTranslateY && enableTranslateZ && yzHandle != null && yzHandle.IsMouseOnPlaneGizmo(target.position, transform.up, transform.forward))
+        else if (enableTranslateY && enableTranslateZ && yzHandle != null && yzHandle.IsMouseOnPlaneGizmo())
         {
             yzHandle.SetMaterialColor(Color.yellow);
             hoverFound = true;
@@ -262,24 +256,48 @@ public class TransformGizmo : MonoBehaviour
             objectStartPos = target.position;
             return true;
         }
-        else if (enableTranslateX && enableTranslateY && xyHandle != null && xyHandle.IsMouseOnPlaneGizmo(target.position, transform.right, transform.up))
+        else if (enableTranslateX && enableTranslateY && xyHandle != null && xyHandle.IsMouseOnPlaneGizmo())
         {
             activePlane = xyHandle;
-            dragStartPos = cam.ScreenPointToRay(Input.mousePosition).GetPoint(0f);
+            Plane dragPlane = activePlane.GetDragPlane(transform, target.position);
+            Ray ray = cam.ScreenPointToRay(Input.mousePosition);
+            if (!dragPlane.Raycast(ray, out float enter))
+            {
+                dragPlane = new Plane(-dragPlane.normal, dragPlane.distance);
+                if (!dragPlane.Raycast(ray, out enter))
+                    return false;
+            }
+            dragStartPos = ray.GetPoint(enter);
             objectStartPos = target.position;
             return true;
         }
-        else if (enableTranslateX && enableTranslateZ && xzHandle != null && xzHandle.IsMouseOnPlaneGizmo(target.position, transform.right, transform.forward))
+        else if (enableTranslateX && enableTranslateZ && xzHandle != null && xzHandle.IsMouseOnPlaneGizmo())
         {
             activePlane = xzHandle;
-            dragStartPos = cam.ScreenPointToRay(Input.mousePosition).GetPoint(0f);
+            Plane dragPlane = activePlane.GetDragPlane(transform, target.position);
+            Ray ray = cam.ScreenPointToRay(Input.mousePosition);
+            if (!dragPlane.Raycast(ray, out float enter))
+            {
+                dragPlane = new Plane(-dragPlane.normal, dragPlane.distance);
+                if (!dragPlane.Raycast(ray, out enter))
+                    return false;
+            }
+            dragStartPos = ray.GetPoint(enter);
             objectStartPos = target.position;
             return true;
         }
-        else if (enableTranslateY && enableTranslateZ && yzHandle != null && yzHandle.IsMouseOnPlaneGizmo(target.position, transform.up, transform.forward))
+        else if (enableTranslateY && enableTranslateZ && yzHandle != null && yzHandle.IsMouseOnPlaneGizmo())
         {
             activePlane = yzHandle;
-            dragStartPos = cam.ScreenPointToRay(Input.mousePosition).GetPoint(0f);
+            Plane dragPlane = activePlane.GetDragPlane(transform, target.position);
+            Ray ray = cam.ScreenPointToRay(Input.mousePosition);
+            if (!dragPlane.Raycast(ray, out float enter))
+            {
+                dragPlane = new Plane(-dragPlane.normal, dragPlane.distance);
+                if (!dragPlane.Raycast(ray, out enter))
+                    return false;
+            }
+            dragStartPos = ray.GetPoint(enter);
             objectStartPos = target.position;
             return true;
         }
@@ -340,7 +358,7 @@ public class TransformGizmo : MonoBehaviour
         activeAxis = null;
         activePlane = null;
         activeRotate = null;
-        action = StateIdle;
+        action = CheckHover;
     }
 
     private Vector3 GetClosestPointOnAxis(Ray ray, Vector3 axisOrigin, Vector3 axisDir)
@@ -368,17 +386,17 @@ public class TransformGizmo : MonoBehaviour
 
     private void CreateAllHandles()
     {
-        xHandle = CreateAxisHandle("X_Handle", new Vector3(0.5f, 0, 0), Quaternion.Euler(0, 0, -90), Color.red, AxisGizmo.Axis.X);
-        yHandle = CreateAxisHandle("Y_Handle", new Vector3(0, 0.5f, 0), Quaternion.identity, Color.green, AxisGizmo.Axis.Y);
-        zHandle = CreateAxisHandle("Z_Handle", new Vector3(0, 0, 0.5f), Quaternion.Euler(90, 0, 0), Color.blue, AxisGizmo.Axis.Z);
+        xHandle = CreateAxisHandle("X_Handle", new Vector3(0.5f, 0.0f, 0.0f), Quaternion.Euler(0.0f, 0.0f, -90.0f), Color.red, AxisGizmo.Axis.X);
+        yHandle = CreateAxisHandle("Y_Handle", new Vector3(0.0f, 0.5f, 0.0f), Quaternion.identity, Color.green, AxisGizmo.Axis.Y);
+        zHandle = CreateAxisHandle("Z_Handle", new Vector3(0.0f, 0.0f, 0.5f), Quaternion.Euler(90.0f, 0.0f, 0.0f), Color.blue, AxisGizmo.Axis.Z);
 
-        xyHandle = CreatePlaneHandle("XY_Handle", new Vector3(0.25f, 0.25f, 0), Quaternion.identity, new Color(1, 1, 0, 0.3f), PlaneGizmo.PlaneType.XY);
-        xzHandle = CreatePlaneHandle("XZ_Handle", new Vector3(0.25f, 0, 0.25f), Quaternion.Euler(90, 0, 0), new Color(1, 0, 1, 0.3f), PlaneGizmo.PlaneType.XZ);
-        yzHandle = CreatePlaneHandle("YZ_Handle", new Vector3(0, 0.25f, 0.25f), Quaternion.Euler(0, -90, 0), new Color(0, 1, 1, 0.3f), PlaneGizmo.PlaneType.YZ);
+        xyHandle = CreatePlaneHandle("XY_Handle", new Vector3(0.25f, 0.25f, 0.0f), Quaternion.identity, new Color(1.0f, 1.0f, 0.0f, 0.3f), PlaneGizmo.PlaneType.XY);
+        xzHandle = CreatePlaneHandle("XZ_Handle", new Vector3(0.25f, 0.0f, 0.25f), Quaternion.Euler(90.0f, 0.0f, 0.0f), new Color(1.0f, 0.0f, 1.0f, 0.3f), PlaneGizmo.PlaneType.XZ);
+        yzHandle = CreatePlaneHandle("YZ_Handle", new Vector3(0.0f, 0.25f, 0.25f), Quaternion.Euler(0.0f, -90.0f, 0.0f), new Color(0.0f, 1.0f, 1.0f, 0.3f), PlaneGizmo.PlaneType.YZ);
 
-        xRotHandle = CreateRotateHandle("X_Rotate", Vector3.zero, Quaternion.Euler(0, 0, 90), Color.red, RotateGizmo.Axis.X);
+        xRotHandle = CreateRotateHandle("X_Rotate", Vector3.zero, Quaternion.Euler(0.0f, 0.0f, 90.0f), Color.red, RotateGizmo.Axis.X);
         yRotHandle = CreateRotateHandle("Y_Rotate", Vector3.zero, Quaternion.identity, Color.green, RotateGizmo.Axis.Y);
-        zRotHandle = CreateRotateHandle("Z_Rotate", Vector3.zero, Quaternion.Euler(90, 0, 0), Color.blue, RotateGizmo.Axis.Z);
+        zRotHandle = CreateRotateHandle("Z_Rotate", Vector3.zero, Quaternion.Euler(90.0f, 0.0f, 0.0f), Color.blue, RotateGizmo.Axis.Z);
     }
 
     private void RegisterHandles()
@@ -441,7 +459,7 @@ public class TransformGizmo : MonoBehaviour
         go.transform.localRotation = localRot;
         go.transform.localScale = new Vector3(0.1f, 0.5f, 0.1f);
         var axisGizmo = go.AddComponent<AxisGizmo>();
-        axisGizmo.Initialize(axis, color, cam, 1.0f, 16f);
+        axisGizmo.Initialize(axis, color, cam, 1.0f, 16.0f);
         return axisGizmo;
     }
 
@@ -453,10 +471,31 @@ public class TransformGizmo : MonoBehaviour
         go.transform.SetParent(transform);
         go.transform.localPosition = localPos;
         go.transform.localRotation = localRot;
-        go.transform.localScale = Vector3.one * 0.25f;
+        go.transform.localScale = Vector3.one * 0.25f * 1.5f;
         var planeGizmo = go.AddComponent<PlaneGizmo>();
-        planeGizmo.Initialize(type, color, cam, 0.25f);
-        // 背面同理...
+        planeGizmo.Initialize(type, color, cam, 0.25f * 1.5f);
+
+        // 產生反面，只加 MeshRenderer，不加 PlaneGizmo 與 Collider
+        GameObject back = GameObject.CreatePrimitive(PrimitiveType.Quad);
+        back.name = name + "_Back";
+        back.tag = GIZMO_TAG;
+        back.transform.SetParent(go.transform);
+        back.transform.localPosition = Vector3.zero;
+        back.transform.localRotation = Quaternion.Euler(0, 180, 0);
+        back.transform.localScale = Vector3.one;
+        // 移除 Collider
+        var backCollider = back.GetComponent<Collider>();
+        if (backCollider != null) DestroyImmediate(backCollider);
+        // 設定共用材質與顏色
+        var backRenderer = back.GetComponent<MeshRenderer>();
+        if (backRenderer != null)
+        {
+            backRenderer.sharedMaterial = GizmoBase.sharedMaterial;
+            var block = new MaterialPropertyBlock();
+            Color backColor = color; backColor.a = 0.8f;
+            block.SetColor("_Color", backColor);
+            backRenderer.SetPropertyBlock(block);
+        }
         return planeGizmo;
     }
 
@@ -472,7 +511,7 @@ public class TransformGizmo : MonoBehaviour
         var mr = go.AddComponent<MeshRenderer>();
         mf.mesh = TorusMeshGenerator.Generate(1.0f, 0.05f, 64, 12);
         var gizmo = go.AddComponent<RotateGizmo>();
-        gizmo.Initialize(axis, color, cam, 16f);
+        gizmo.Initialize(axis, color, cam, 16.0f);
         return gizmo;
     }
 

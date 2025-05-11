@@ -24,28 +24,34 @@ public class PlaneGizmo : GizmoBase
 
     protected override Material CreateDefaultMaterial()
     {
-        // 使用 Unlit/Color shader，支援顏色與透明度
-        Material mat = new Material(Shader.Find("Unlit/Color"));
-        mat.SetInt("_Cull", (int)UnityEngine.Rendering.CullMode.Off); // 雙面可見
-        mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
-        mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
-        mat.SetInt("_ZWrite", 0);
-        mat.DisableKeyword("_ALPHATEST_ON");
-        mat.EnableKeyword("_ALPHABLEND_ON");
-        mat.DisableKeyword("_ALPHAPREMULTIPLY_ON");
-        mat.renderQueue = 3000;
-        return mat;
+        // 使用 GizmoBase 的共用材質
+        return base.CreateDefaultMaterial();
     }
 
     public override void SetMaterialColor(Color color)
     {
-        if (material == null)
+        if (propertyBlock == null)
+            propertyBlock = new MaterialPropertyBlock();
+        color.a = 0.8f; // 預設 80% 透明度
+        propertyBlock.SetColor("_Color", color);
+        var renderer = GetComponent<MeshRenderer>();
+        if (renderer != null)
         {
-            var renderer = GetComponent<MeshRenderer>();
-            material = CreateDefaultMaterial();
-            renderer.material = material;
+            renderer.sharedMaterial = sharedMaterial;
+            renderer.SetPropertyBlock(propertyBlock);
         }
-        material.SetColor("_Color", color); // 設置顏色與透明度
+        // 設定反面
+        var back = transform.Find(name + "_Back");
+        if (back != null)
+        {
+            var backRenderer = back.GetComponent<MeshRenderer>();
+            if (backRenderer != null)
+            {
+                var block = new MaterialPropertyBlock();
+                block.SetColor("_Color", color);
+                backRenderer.SetPropertyBlock(block);
+            }
+        }
     }
 
     public Plane GetDragPlane(Transform gizmoRoot, Vector3 origin)
@@ -59,11 +65,11 @@ public class PlaneGizmo : GizmoBase
         }
     }
 
-    public bool IsMouseOnPlaneGizmo(Vector3 planeCenter, Vector3 planeRight, Vector3 planeUp)
+    public bool IsMouseOnPlaneGizmo()
     {
-        Vector3 c = planeCenter;
-        Vector3 r = planeRight * size * 0.5f;
-        Vector3 u = planeUp * size * 0.5f;
+        Vector3 c = transform.position;
+        Vector3 r = transform.right * size * 0.5f;
+        Vector3 u = transform.up * size * 0.5f;
         Vector3[] worldCorners = new Vector3[] {
             c - r - u,
             c + r - u,

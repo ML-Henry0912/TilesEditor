@@ -9,17 +9,33 @@ using UnityEngine;
 public abstract class GizmoBase : MonoBehaviour
 {
     public Color baseColor;
-    protected Material material;
+    public static Material sharedMaterial;
+    protected MaterialPropertyBlock propertyBlock;
 
     public virtual void SetMaterialColor(Color color)
     {
-        if (material == null)
+        if (sharedMaterial == null)
         {
-            var renderer = GetComponent<MeshRenderer>();
-            material = CreateDefaultMaterial();
-            renderer.material = material;
+            sharedMaterial = new Material(Shader.Find("Unlit/Color"));
+            sharedMaterial.SetInt("_Cull", (int)UnityEngine.Rendering.CullMode.Off);
+            sharedMaterial.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+            sharedMaterial.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+            sharedMaterial.SetInt("_ZWrite", 0);
+            sharedMaterial.DisableKeyword("_ALPHATEST_ON");
+            sharedMaterial.EnableKeyword("_ALPHABLEND_ON");
+            sharedMaterial.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+            sharedMaterial.renderQueue = 3000;
         }
-        material.color = color;
+        if (propertyBlock == null)
+            propertyBlock = new MaterialPropertyBlock();
+        color.a = 0.8f; // 預設 80% 透明度
+        propertyBlock.SetColor("_Color", color);
+        var renderer = GetComponent<MeshRenderer>();
+        if (renderer != null)
+        {
+            renderer.sharedMaterial = sharedMaterial;
+            renderer.SetPropertyBlock(propertyBlock);
+        }
     }
 
     public void ResetColor()
@@ -27,5 +43,20 @@ public abstract class GizmoBase : MonoBehaviour
         SetMaterialColor(baseColor);
     }
 
-    protected abstract Material CreateDefaultMaterial();
+    protected virtual Material CreateDefaultMaterial()
+    {
+        if (sharedMaterial == null)
+        {
+            sharedMaterial = new Material(Shader.Find("Unlit/Color"));
+            sharedMaterial.SetInt("_Cull", (int)UnityEngine.Rendering.CullMode.Off);
+            sharedMaterial.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+            sharedMaterial.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+            sharedMaterial.SetInt("_ZWrite", 0);
+            sharedMaterial.DisableKeyword("_ALPHATEST_ON");
+            sharedMaterial.EnableKeyword("_ALPHABLEND_ON");
+            sharedMaterial.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+            sharedMaterial.renderQueue = 3000;
+        }
+        return sharedMaterial;
+    }
 }
