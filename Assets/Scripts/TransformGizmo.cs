@@ -26,7 +26,7 @@ public class TransformGizmo : MonoBehaviour
 
     private AxisGizmo xHandle, yHandle, zHandle;
     private PlaneGizmo xyHandle, xzHandle, yzHandle;
-    private RotateGizmo xRotateHandle, yRotateHandle, zRotateHandle;
+    private RotateGizmo xRotHandle, yRotHandle, zRotHandle;
 
     private Vector3 dragStartPos, objectStartPos;
     private AxisGizmo activeAxis;
@@ -40,10 +40,6 @@ public class TransformGizmo : MonoBehaviour
     private Action action;
 
     bool initialized = false;
-
-    // 狀態機定義
-    private enum GizmoState { Idle, Hover, Drag }
-    private GizmoState gizmoState = GizmoState.Idle;
 
     // 1. 定義 Handle 配置結構
     public class GizmoHandleConfig
@@ -60,8 +56,8 @@ public class TransformGizmo : MonoBehaviour
         this.cam = cam;
         CreateAllHandles();
         RegisterHandles();
-        gizmoState = GizmoState.Idle;
         initialized = true;
+        action = StateIdle;
     }
 
     void Update()
@@ -73,18 +69,7 @@ public class TransformGizmo : MonoBehaviour
 
         UpdateHandleVisibility();
 
-        switch (gizmoState)
-        {
-            case GizmoState.Idle:
-                StateIdle();
-                break;
-            case GizmoState.Hover:
-                StateHover();
-                break;
-            case GizmoState.Drag:
-                StateDrag();
-                break;
-        }
+        action?.Invoke();
     }
 
     void UpdateHandleVisibility()
@@ -101,7 +86,7 @@ public class TransformGizmo : MonoBehaviour
     {
         if (TryHoverHandle())
         {
-            gizmoState = GizmoState.Hover;
+            action = StateHover;
         }
     }
 
@@ -112,12 +97,12 @@ public class TransformGizmo : MonoBehaviour
         {
             if (TryBeginDrag())
             {
-                gizmoState = GizmoState.Drag;
+                action = StateDrag;
             }
         }
         else if (!TryHoverHandle())
         {
-            gizmoState = GizmoState.Idle;
+            action = StateIdle;
         }
     }
 
@@ -130,7 +115,6 @@ public class TransformGizmo : MonoBehaviour
             if (Input.GetMouseButtonUp(0))
             {
                 EndDrag();
-                gizmoState = GizmoState.Idle;
             }
         }
         else if (activePlane != null)
@@ -139,7 +123,6 @@ public class TransformGizmo : MonoBehaviour
             if (Input.GetMouseButtonUp(0))
             {
                 EndDrag();
-                gizmoState = GizmoState.Idle;
             }
         }
         else if (activeRotate != null)
@@ -148,12 +131,11 @@ public class TransformGizmo : MonoBehaviour
             if (Input.GetMouseButtonUp(0))
             {
                 EndDrag();
-                gizmoState = GizmoState.Idle;
             }
         }
         else
         {
-            gizmoState = GizmoState.Idle;
+            action = StateIdle;
         }
     }
 
@@ -162,24 +144,24 @@ public class TransformGizmo : MonoBehaviour
     {
         xHandle?.ResetColor(); yHandle?.ResetColor(); zHandle?.ResetColor();
         xyHandle?.ResetColor(); xzHandle?.ResetColor(); yzHandle?.ResetColor();
-        xRotateHandle?.ResetColor(); yRotateHandle?.ResetColor(); zRotateHandle?.ResetColor();
+        xRotHandle?.ResetColor(); yRotHandle?.ResetColor(); zRotHandle?.ResetColor();
 
         float ringRadius = 1.0f * 1.2f;
         Vector3 center = target.position;
         bool hoverFound = false;
-        if (enableRotateY && yRotateHandle != null && yRotateHandle.IsMouseOnGizmo(center, transform.up, ringRadius))
+        if (enableRotateY && yRotHandle != null && yRotHandle.IsMouseOnGizmo(center, transform.up, ringRadius))
         {
-            yRotateHandle.SetMaterialColor(Color.yellow);
+            yRotHandle.SetMaterialColor(Color.yellow);
             hoverFound = true;
         }
-        else if (enableRotateX && xRotateHandle != null && xRotateHandle.IsMouseOnGizmo(center, transform.right, ringRadius))
+        else if (enableRotateX && xRotHandle != null && xRotHandle.IsMouseOnGizmo(center, transform.right, ringRadius))
         {
-            xRotateHandle.SetMaterialColor(Color.yellow);
+            xRotHandle.SetMaterialColor(Color.yellow);
             hoverFound = true;
         }
-        else if (enableRotateZ && zRotateHandle != null && zRotateHandle.IsMouseOnGizmo(center, transform.forward, ringRadius))
+        else if (enableRotateZ && zRotHandle != null && zRotHandle.IsMouseOnGizmo(center, transform.forward, ringRadius))
         {
-            zRotateHandle.SetMaterialColor(Color.yellow);
+            zRotHandle.SetMaterialColor(Color.yellow);
             hoverFound = true;
         }
         else if (enableTranslateX && xHandle != null && xHandle.IsMouseOnAxisGizmo(target.position, transform.right))
@@ -220,9 +202,9 @@ public class TransformGizmo : MonoBehaviour
     {
         float ringRadius = 1.0f * 1.2f;
         Vector3 center = target.position;
-        if (enableRotateY && yRotateHandle != null && yRotateHandle.IsMouseOnGizmo(center, transform.up, ringRadius))
+        if (enableRotateY && yRotHandle != null && yRotHandle.IsMouseOnGizmo(center, transform.up, ringRadius))
         {
-            activeRotate = yRotateHandle;
+            activeRotate = yRotHandle;
             rotationPlane = new Plane(transform.up, center);
             Ray ray = cam.ScreenPointToRay(Input.mousePosition);
             if (rotationPlane.Raycast(ray, out float enter))
@@ -232,9 +214,9 @@ public class TransformGizmo : MonoBehaviour
                 return true;
             }
         }
-        else if (enableRotateX && xRotateHandle != null && xRotateHandle.IsMouseOnGizmo(center, transform.right, ringRadius))
+        else if (enableRotateX && xRotHandle != null && xRotHandle.IsMouseOnGizmo(center, transform.right, ringRadius))
         {
-            activeRotate = xRotateHandle;
+            activeRotate = xRotHandle;
             rotationPlane = new Plane(transform.right, center);
             Ray ray = cam.ScreenPointToRay(Input.mousePosition);
             if (rotationPlane.Raycast(ray, out float enter))
@@ -244,9 +226,9 @@ public class TransformGizmo : MonoBehaviour
                 return true;
             }
         }
-        else if (enableRotateZ && zRotateHandle != null && zRotateHandle.IsMouseOnGizmo(center, transform.forward, ringRadius))
+        else if (enableRotateZ && zRotHandle != null && zRotHandle.IsMouseOnGizmo(center, transform.forward, ringRadius))
         {
-            activeRotate = zRotateHandle;
+            activeRotate = zRotHandle;
             rotationPlane = new Plane(transform.forward, center);
             Ray ray = cam.ScreenPointToRay(Input.mousePosition);
             if (rotationPlane.Raycast(ray, out float enter))
@@ -358,6 +340,7 @@ public class TransformGizmo : MonoBehaviour
         activeAxis = null;
         activePlane = null;
         activeRotate = null;
+        action = StateIdle;
     }
 
     private Vector3 GetClosestPointOnAxis(Ray ray, Vector3 axisOrigin, Vector3 axisDir)
@@ -393,48 +376,57 @@ public class TransformGizmo : MonoBehaviour
         xzHandle = CreatePlaneHandle("XZ_Handle", new Vector3(0.25f, 0, 0.25f), Quaternion.Euler(90, 0, 0), new Color(1, 0, 1, 0.3f), PlaneGizmo.PlaneType.XZ);
         yzHandle = CreatePlaneHandle("YZ_Handle", new Vector3(0, 0.25f, 0.25f), Quaternion.Euler(0, -90, 0), new Color(0, 1, 1, 0.3f), PlaneGizmo.PlaneType.YZ);
 
-        xRotateHandle = CreateRotateHandle("X_Rotate", Vector3.zero, Quaternion.Euler(0, 0, 90), Color.red, RotateGizmo.Axis.X);
-        yRotateHandle = CreateRotateHandle("Y_Rotate", Vector3.zero, Quaternion.identity, Color.green, RotateGizmo.Axis.Y);
-        zRotateHandle = CreateRotateHandle("Z_Rotate", Vector3.zero, Quaternion.Euler(90, 0, 0), Color.blue, RotateGizmo.Axis.Z);
+        xRotHandle = CreateRotateHandle("X_Rotate", Vector3.zero, Quaternion.Euler(0, 0, 90), Color.red, RotateGizmo.Axis.X);
+        yRotHandle = CreateRotateHandle("Y_Rotate", Vector3.zero, Quaternion.identity, Color.green, RotateGizmo.Axis.Y);
+        zRotHandle = CreateRotateHandle("Z_Rotate", Vector3.zero, Quaternion.Euler(90, 0, 0), Color.blue, RotateGizmo.Axis.Z);
     }
 
     private void RegisterHandles()
     {
         handleConfigs.Clear();
-        handleConfigs.Add(new GizmoHandleConfig {
+        handleConfigs.Add(new GizmoHandleConfig
+        {
             handleObj = xHandle?.gameObject,
             visibleCondition = g => g.enableTranslateX
         });
-        handleConfigs.Add(new GizmoHandleConfig {
+        handleConfigs.Add(new GizmoHandleConfig
+        {
             handleObj = yHandle?.gameObject,
             visibleCondition = g => g.enableTranslateY
         });
-        handleConfigs.Add(new GizmoHandleConfig {
+        handleConfigs.Add(new GizmoHandleConfig
+        {
             handleObj = zHandle?.gameObject,
             visibleCondition = g => g.enableTranslateZ
         });
-        handleConfigs.Add(new GizmoHandleConfig {
+        handleConfigs.Add(new GizmoHandleConfig
+        {
             handleObj = xyHandle?.gameObject,
             visibleCondition = g => g.enableTranslateX && g.enableTranslateY
         });
-        handleConfigs.Add(new GizmoHandleConfig {
+        handleConfigs.Add(new GizmoHandleConfig
+        {
             handleObj = xzHandle?.gameObject,
             visibleCondition = g => g.enableTranslateX && g.enableTranslateZ
         });
-        handleConfigs.Add(new GizmoHandleConfig {
+        handleConfigs.Add(new GizmoHandleConfig
+        {
             handleObj = yzHandle?.gameObject,
             visibleCondition = g => g.enableTranslateY && g.enableTranslateZ
         });
-        handleConfigs.Add(new GizmoHandleConfig {
-            handleObj = xRotateHandle?.gameObject,
+        handleConfigs.Add(new GizmoHandleConfig
+        {
+            handleObj = xRotHandle?.gameObject,
             visibleCondition = g => g.enableRotateX
         });
-        handleConfigs.Add(new GizmoHandleConfig {
-            handleObj = yRotateHandle?.gameObject,
+        handleConfigs.Add(new GizmoHandleConfig
+        {
+            handleObj = yRotHandle?.gameObject,
             visibleCondition = g => g.enableRotateY
         });
-        handleConfigs.Add(new GizmoHandleConfig {
-            handleObj = zRotateHandle?.gameObject,
+        handleConfigs.Add(new GizmoHandleConfig
+        {
+            handleObj = zRotHandle?.gameObject,
             visibleCondition = g => g.enableRotateZ
         });
     }
