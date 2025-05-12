@@ -1,0 +1,8 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+Rule Name: project-rule
+Description: |
+  - 所有指令依照rules執行。

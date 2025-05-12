@@ -2,42 +2,76 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GameMain : MonoBehaviour
+namespace TilesEditor
 {
-    public Camera cam;
-    public Transform target;
-    public GizmoMaterials materials;
-
-    GameObject spawnedObj;
-    TransformGizmo gizmo;
-
-    void OnGUI()
+    public class GameMain : MonoBehaviour
     {
-        float w = Screen.width * 0.4f;
-        float h = Screen.height * 0.12f;
-        float x = (Screen.width - w) / 2f;
-        float y = Screen.height * 0.1f;
-        GUIStyle style = new GUIStyle(GUI.skin.button);
-        style.fontSize = (int)(h * 0.4f);
-        style.normal.textColor = Color.white;
-        style.fontStyle = FontStyle.Bold;
+        public static GameMain Main;
 
-        if (spawnedObj == null)
+        public Camera cam;
+        public Transform target;
+        public GizmoMaterials materials;
+        public TilePrefabList tilePrefabList;
+        public GameObject gizmoRoot;
+
+        public UiManager uiManager;
+
+        public bool enableTileSelect = true;
+
+        public TileBehavior[] tiles;
+
+        TransformGizmo gizmo;
+
+        private void Start()
         {
-            if (GUI.Button(new Rect(x, y, w, h), "產生帶 Gizmo 的 Cube", style))
+            uiManager?.Initialize();
+
+            Main = this;
+            // 將所有 tiles 設定隨機位置，z軸為0
+            foreach (var tile in tiles)
             {
-                spawnedObj = new GameObject();
-                spawnedObj.transform.position = Vector3.zero;
-                spawnedObj.transform.localScale = Vector3.one;
-                gizmo = spawnedObj.AddComponent<TransformGizmo>();
-                gizmo.Initialize(target, cam, materials);
+                if (tile != null)
+                {
+                    float x = Random.Range(-5f, 5f);
+                    float y = Random.Range(-5f, 5f);
+                    tile.transform.position = new Vector3(x, y, 0f);
+
+                    tile.Initialize();
+                }
             }
         }
-        else
+
+        void Update()
         {
-            GUI.Label(new Rect(x, y, w, h), "已產生 Cube 並加上 TransformGizmo", style);
+            if (!enableTileSelect) return;
+            HandleTileSelect();
+        }
+
+        private void HandleTileSelect()
+        {
+            // 滑鼠左鍵點擊偵測
+            if (Input.GetMouseButtonDown(0))
+            {
+                Ray ray = cam.ScreenPointToRay(Input.mousePosition);
+                RaycastHit hit;
+                if (Physics.Raycast(ray, out hit))
+                {
+                    if (hit.collider != null && hit.collider.CompareTag("Tile"))
+                    {
+                        target = hit.collider.transform;
+                        // 初始化 gizmo 讓使用者編輯該物件
+                        if (gizmo == null)
+                        {
+                            gizmo = gizmoRoot.AddComponent<TransformGizmo>();
+                        }
+                        gizmo.Initialize(target, cam, materials);
+                        // 關閉 rotation X, Y 與 translate Z
+                        gizmo.rotateX = false;
+                        gizmo.rotateY = false;
+                        gizmo.translateZ = false;
+                    }
+                }
+            }
         }
     }
-
-
 }

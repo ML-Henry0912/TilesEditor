@@ -4,11 +4,17 @@ using UnityEngine;
 
 namespace TilesEditor
 {
-    public class TileBehavior : MonoBehaviour
+    public class UiManager : MonoBehaviour
     {
+        // Start is called before the first frame update
+        void Start()
+        {
+
+        }
+
         public void Initialize()
         {
-            this.tag = "Tile";
+
         }
 
         // Update is called once per frame
