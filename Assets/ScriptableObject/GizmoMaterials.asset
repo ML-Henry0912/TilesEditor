@@ -19,3 +19,4 @@ MonoBehaviour:
   xzMagenta: {fileID: 2100000, guid: 91624aa7a63c24b41865f92f152baeab, type: 2}
   yzCyan: {fileID: 2100000, guid: d9a6893eb64fe4cf7bd00d749e5fa60b, type: 2}
   hoverYellow: {fileID: 2100000, guid: 8970e6d2a626e4172aebdffae002bea6, type: 2}
+  invisible: {fileID: 2100000, guid: e8a7d6939a42c40ffa9dcf09b777e830, type: 2}

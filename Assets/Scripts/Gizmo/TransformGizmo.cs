@@ -70,9 +70,16 @@ namespace TilesEditor
 
         public void Initialize(Transform target, Camera cam, GizmoMaterials materials)
         {
+            // 檢查是否已經初始化過相同的目標
+            if (initialized && this.target == target && this.cam == cam && this.materials == materials)
+            {
+                return;
+            }
+
             this.target = target;
             this.cam = cam;
             this.materials = materials;
+
             // 先 Destroy 舊的 handle GameObject，避免記憶體 leak
             for (int _i = 0; _i < allGizmos.Length; _i++)
             {
@@ -82,6 +89,7 @@ namespace TilesEditor
                     allGizmos[_i] = null;
                 }
             }
+
             CreateAllHandles();
             initialized = true;
             action = CheckHover;
@@ -460,7 +468,7 @@ namespace TilesEditor
                 // 先設定基本尺寸
                 collider.radius = AXIS_HANDLE_SCALE * 0.5f;
                 collider.height = AXIS_HANDLE_LENGTH;
-                
+
                 // 根據軸向設定方向
                 switch (axis)
                 {
@@ -608,7 +616,7 @@ namespace TilesEditor
             }
         }
 
-        protected void SetPlaneGizmoProperties(PlaneGizmo.PlaneType type, Vector3 position, Color color)
+        protected void SetPlaneGizmoProperties(PlaneGizmo.PlaneType type, Vector3? position = null)
         {
             PlaneGizmo targetGizmo = null;
             switch (type)
@@ -626,26 +634,27 @@ namespace TilesEditor
 
             if (targetGizmo == null) return;
 
-            targetGizmo.transform.localPosition = position;
-
-
-            targetGizmo.SetMaterialColor(color);
-            var renderer = targetGizmo.GetComponent<MeshRenderer>();
-            if (renderer != null)
+            if (position.HasValue)
             {
-                if (type == PlaneGizmo.PlaneType.XY) renderer.sharedMaterial = materials.xyYellow;
-                else if (type == PlaneGizmo.PlaneType.XZ) renderer.sharedMaterial = materials.xzMagenta;
-                else if (type == PlaneGizmo.PlaneType.YZ) renderer.sharedMaterial = materials.yzCyan;
+                targetGizmo.transform.localPosition = position.Value;
+            }
+        }
+
+        protected void SetPlaneGizmoInvisible(PlaneGizmo.PlaneType type)
+        {
+            switch (type)
+            {
+                case PlaneGizmo.PlaneType.XY:
+                    xyHandle.SetInvisible(true);
+                    break;
+                case PlaneGizmo.PlaneType.XZ:
+                    xzHandle.SetInvisible(true);
+                    break;
+                case PlaneGizmo.PlaneType.YZ:
+                    yzHandle.SetInvisible(true);
+                    break;
             }
 
-            // 更新反面材質
-            var backRenderer = targetGizmo.transform.Find(targetGizmo.name + "_Back")?.GetComponent<MeshRenderer>();
-            if (backRenderer != null)
-            {
-                if (type == PlaneGizmo.PlaneType.XY) backRenderer.sharedMaterial = materials.xyYellow;
-                else if (type == PlaneGizmo.PlaneType.XZ) backRenderer.sharedMaterial = materials.xzMagenta;
-                else if (type == PlaneGizmo.PlaneType.YZ) backRenderer.sharedMaterial = materials.yzCyan;
-            }
 
         }
 

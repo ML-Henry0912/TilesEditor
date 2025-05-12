@@ -30,12 +30,24 @@ namespace TilesEditor
             this.size = size;
         }
 
+        public void SetInvisible(bool value)
+        {
+            var ren = GetComponent<MeshRenderer>();
+            if (value)
+                ren.enabled = false;
+            else
+                ren.enabled = true;
+        }
+
         public override void SetMaterialColor(Color color)
         {
             if (propertyBlock == null)
                 propertyBlock = new MaterialPropertyBlock();
-            color.a = 0.8f; // 預設 80% 透明度
-            propertyBlock.SetColor("_Color", color);
+
+            Color finalColor = new Color(color.r, color.g, color.b, 0.8f);
+
+            propertyBlock.SetColor("_Color", finalColor);
+
             var renderer = GetComponent<MeshRenderer>();
             if (renderer != null)
             {
@@ -49,7 +61,7 @@ namespace TilesEditor
                 if (backRenderer != null)
                 {
                     var block = new MaterialPropertyBlock();
-                    block.SetColor("_Color", color);
+                    block.SetColor("_Color", finalColor);
                     backRenderer.SetPropertyBlock(block);
                 }
             }
