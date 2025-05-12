@@ -39,10 +39,16 @@ public class TransformGizmo : MonoBehaviour
     public bool rotateY = true;
     public bool rotateZ = true;
 
-    AxisGizmo xHandle, yHandle, zHandle;
-    PlaneGizmo xyHandle, xzHandle, yzHandle;
-    RotateGizmo xRotHandle, yRotHandle, zRotHandle;
-    List<GizmoBase> allGizmos = new();
+    private GizmoBase[] allGizmos = new GizmoBase[9];
+    AxisGizmo xHandle { get => (AxisGizmo)allGizmos[0]; set => allGizmos[0] = value; }
+    AxisGizmo yHandle { get => (AxisGizmo)allGizmos[1]; set => allGizmos[1] = value; }
+    AxisGizmo zHandle { get => (AxisGizmo)allGizmos[2]; set => allGizmos[2] = value; }
+    PlaneGizmo xyHandle { get => (PlaneGizmo)allGizmos[3]; set => allGizmos[3] = value; }
+    PlaneGizmo xzHandle { get => (PlaneGizmo)allGizmos[4]; set => allGizmos[4] = value; }
+    PlaneGizmo yzHandle { get => (PlaneGizmo)allGizmos[5]; set => allGizmos[5] = value; }
+    RotateGizmo xRotHandle { get => (RotateGizmo)allGizmos[6]; set => allGizmos[6] = value; }
+    RotateGizmo yRotHandle { get => (RotateGizmo)allGizmos[7]; set => allGizmos[7] = value; }
+    RotateGizmo zRotHandle { get => (RotateGizmo)allGizmos[8]; set => allGizmos[8] = value; }
 
     public GizmoMaterials materials;
 
@@ -74,12 +80,16 @@ public class TransformGizmo : MonoBehaviour
         this.target = target;
         this.cam = cam;
         this.materials = materials;
-        if (xHandle == null || yHandle == null || zHandle == null ||
-            xyHandle == null || xzHandle == null || yzHandle == null ||
-            xRotHandle == null || yRotHandle == null || zRotHandle == null)
+        // 先 Destroy 舊的 handle GameObject，避免記憶體 leak
+        for (int _i = 0; _i < allGizmos.Length; _i++)
         {
-            CreateAllHandles();
+            if (allGizmos[_i] != null)
+            {
+                Destroy(allGizmos[_i].gameObject);
+                allGizmos[_i] = null;
+            }
         }
+        CreateAllHandles();
         RegisterHandles();
         initialized = true;
         action = CheckHover;
@@ -161,9 +171,9 @@ public class TransformGizmo : MonoBehaviour
     // 嘗試 hover 到 handle，並處理 hover 效果
     bool TryHoverHandle()
     {
-        foreach (var _gm in allGizmos)
+        foreach (var gizmo in allGizmos)
         {
-            _gm.ResetColor();
+            gizmo.ResetColor();
         }
 
         float ringRadius = 1.0f * 1.2f;
@@ -430,8 +440,6 @@ public class TransformGizmo : MonoBehaviour
 
     void CreateAllHandles()
     {
-        allGizmos.Clear();
-
         if (xHandle == null)
             xHandle = CreateAxisHandle("X_Handle", new Vector3(AXIS_HANDLE_OFFSET, 0.0f, 0.0f), Quaternion.Euler(0.0f, 0.0f, -90.0f), Color.red, AxisGizmo.Axis.X);
         if (yHandle == null)
@@ -453,17 +461,6 @@ public class TransformGizmo : MonoBehaviour
         if (zRotHandle == null)
             zRotHandle = CreateRotateHandle("Z_Rotate", Vector3.zero, Quaternion.Euler(90.0f, 0.0f, 0.0f), Color.blue, RotateGizmo.Axis.Z);
 
-        allGizmos.Add(xHandle);
-        allGizmos.Add(yHandle);
-        allGizmos.Add(zHandle);
-
-        allGizmos.Add(xyHandle);
-        allGizmos.Add(xzHandle);
-        allGizmos.Add(yzHandle);
-
-        allGizmos.Add(xRotHandle);
-        allGizmos.Add(yRotHandle);
-        allGizmos.Add(zRotHandle);
 
     }
 
