@@ -18,6 +18,5 @@ namespace TilesEditor
         public Material xzMagenta;
         public Material yzCyan;
         public Material hoverYellow;
-        public Material invisible;
     }
 }

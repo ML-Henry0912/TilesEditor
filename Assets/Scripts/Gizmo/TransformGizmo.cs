@@ -1,9 +1,9 @@
 // =============================================
 // 檔案名稱：TransformGizmo.cs
-// 1. 本類別必須作為主控 Gizmo，整合軸、平面、旋轉等子 Gizmo。
-// 2. 必須負責處理物件的移動、旋轉、縮放與互動邏輯。
-// 3. 必須支援安全重複初始化，Initialize 可多次呼叫以覆蓋狀態，不會產生重複資源。
-// 4. 旋轉功能目前採用 FromToRotation + Dot 判斷，『有穩定性風險，仍需改進』，若滑鼠拖曳跨越圓環180度或 Gizmo 有鏡像/縮放時，可能出現旋轉跳變或方向反轉。
+// 1. 本類別作為主控 Gizmo，整合軸、平面、旋轉等子 Gizmo。
+// 2. 負責處理物件的移動、旋轉、縮放與互動邏輯。
+// 3. 支援安全重複初始化，相同參數的初始化會被忽略。
+// 4. 旋轉功能採用 FromToRotation + Dot 判斷，若滑鼠拖曳跨越圓環180度或 Gizmo 有鏡像/縮放時，可能出現旋轉跳變或方向反轉。
 // 5. 所有 Gizmo 材質由 ScriptableObject 統一管理，於建立時指定，顏色與透明度（80%）以 MaterialPropertyBlock 設定，避免記憶體浪費。
 // 6. PlaneGizmo 必須自動產生正反兩面，確保雙面皆可顯示顏色與高光，反面僅作顯示不參與互動。
 // 7. 所有互動偵測（軸、平面、旋轉）必須以數學計算為主，不依賴 Collider，確保精確度與效能。
@@ -123,6 +123,11 @@ namespace TilesEditor
             {
                 action = CheckMouseDown;
             }
+        }
+
+        protected void MouseDownState()
+        {
+            action = CheckMouseDown;
         }
 
         // 狀態：Hover，檢查是否按下滑鼠進入拖曳

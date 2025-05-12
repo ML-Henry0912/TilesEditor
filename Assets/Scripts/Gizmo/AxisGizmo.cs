@@ -2,10 +2,8 @@
 // 檔案名稱：AxisGizmo.cs
 // 1. 用於顯示與操作三軸（X, Y, Z）方向的 Gizmo。
 // 2. 讓使用者可以拖曳某一軸進行精確的物件操作。
-// 3. 本元件支援安全重複初始化，Initialize 可多次呼叫以覆蓋狀態，不會產生重複資源。
-// 4. 所有 Gizmo 材質由 ScriptableObject（GizmoMaterials）統一管理，於建立時指定，顏色與透明度（80%）以 MaterialPropertyBlock 設定，避免記憶體浪費與提升一致性。
-// 5. 使用 Collider 進行滑鼠事件偵測，確保互動的準確性。
-// 6. 本元件為 TransformGizmo 的子物件，請勿手動移除或更改父子結構。
+// 3. 使用 CapsuleCollider 進行滑鼠事件偵測，確保互動的準確性。
+// 4. 本元件為 TransformGizmo 的子物件，請勿手動移除或更改父子結構。
 // =============================================
 using UnityEngine;
 

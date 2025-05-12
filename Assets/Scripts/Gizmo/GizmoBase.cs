@@ -4,10 +4,10 @@ namespace TilesEditor
 {
     // =============================================
     // 檔案名稱：GizmoBase.cs
-    // 1. Gizmo 的基底類別，提供共用屬性與方法。
-    // 2. 供其他 Gizmo（如軸、平面、旋轉等）繼承使用。
-    // 3. 本元件支援安全重複初始化，Initialize 可多次呼叫以覆蓋狀態，不會產生重複資源。
-    // 4. 所有 Gizmo 共用同一份靜態材質，顏色與透明度（80%）以 MaterialPropertyBlock 設定，避免記憶體浪費。
+    // 1. 作為所有 Gizmo 元件的基礎類別。
+    // 2. 提供共用的顏色管理與材質設定功能。
+    // 3. 定義虛擬方法供子類別實作。
+    // 4. 使用 MaterialPropertyBlock 來設定顏色，避免材質實例化。
     // =============================================
     public abstract class GizmoBase : MonoBehaviour
     {
