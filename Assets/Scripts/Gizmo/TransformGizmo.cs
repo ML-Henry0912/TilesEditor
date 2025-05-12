@@ -26,7 +26,6 @@ namespace TilesEditor
         const float AXIS_HANDLE_LENGTH = 0.8f;
         const float AXIS_HANDLE_THICKNESS = 16.0f;
         const float RING_RADIUS = 1.2f;
-        public const string GIZMO_TAG = "GizmoHandle";
 
         public Transform target;
         public Camera cam;
@@ -459,7 +458,6 @@ namespace TilesEditor
         {
             GameObject go = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
             go.name = name;
-            go.tag = GIZMO_TAG;
             go.transform.SetParent(transform);
             go.transform.localPosition = localPos;
             go.transform.localRotation = localRot;
@@ -502,7 +500,6 @@ namespace TilesEditor
         {
             GameObject go = GameObject.CreatePrimitive(PrimitiveType.Quad);
             go.name = name;
-            go.tag = GIZMO_TAG;
             go.transform.SetParent(transform);
             go.transform.localPosition = localPos;
             go.transform.localRotation = localRot;
@@ -517,7 +514,6 @@ namespace TilesEditor
             // 產生反面
             GameObject back = GameObject.CreatePrimitive(PrimitiveType.Quad);
             back.name = name + "_Back";
-            back.tag = GIZMO_TAG;
             back.transform.SetParent(go.transform);
             back.transform.localPosition = Vector3.zero;
             back.transform.localRotation = Quaternion.Euler(0, 180, 0);
@@ -534,7 +530,6 @@ namespace TilesEditor
         RotateGizmo CreateRotateHandle(string name, Vector3 localPos, Quaternion localRot, Color color, RotateGizmo.Axis axis)
         {
             GameObject go = new GameObject(name);
-            go.tag = GIZMO_TAG;
             go.transform.SetParent(transform);
             go.transform.localPosition = localPos;
             go.transform.localRotation = localRot;
