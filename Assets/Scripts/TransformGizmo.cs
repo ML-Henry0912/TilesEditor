@@ -54,7 +54,12 @@ public class TransformGizmo : MonoBehaviour
     {
         this.target = target;
         this.cam = cam;
-        CreateAllHandles();
+        if (xHandle == null || yHandle == null || zHandle == null ||
+            xyHandle == null || xzHandle == null || yzHandle == null ||
+            xRotHandle == null || yRotHandle == null || zRotHandle == null)
+        {
+            CreateAllHandles();
+        }
         RegisterHandles();
         initialized = true;
         action = CheckHover;
@@ -386,17 +391,26 @@ public class TransformGizmo : MonoBehaviour
 
     void CreateAllHandles()
     {
-        xHandle = CreateAxisHandle("X_Handle", new Vector3(0.5f, 0.0f, 0.0f), Quaternion.Euler(0.0f, 0.0f, -90.0f), Color.red, AxisGizmo.Axis.X);
-        yHandle = CreateAxisHandle("Y_Handle", new Vector3(0.0f, 0.5f, 0.0f), Quaternion.identity, Color.green, AxisGizmo.Axis.Y);
-        zHandle = CreateAxisHandle("Z_Handle", new Vector3(0.0f, 0.0f, 0.5f), Quaternion.Euler(90.0f, 0.0f, 0.0f), Color.blue, AxisGizmo.Axis.Z);
+        if (xHandle == null)
+            xHandle = CreateAxisHandle("X_Handle", new Vector3(0.5f, 0.0f, 0.0f), Quaternion.Euler(0.0f, 0.0f, -90.0f), Color.red, AxisGizmo.Axis.X);
+        if (yHandle == null)
+            yHandle = CreateAxisHandle("Y_Handle", new Vector3(0.0f, 0.5f, 0.0f), Quaternion.identity, Color.green, AxisGizmo.Axis.Y);
+        if (zHandle == null)
+            zHandle = CreateAxisHandle("Z_Handle", new Vector3(0.0f, 0.0f, 0.5f), Quaternion.Euler(90.0f, 0.0f, 0.0f), Color.blue, AxisGizmo.Axis.Z);
 
-        xyHandle = CreatePlaneHandle("XY_Handle", new Vector3(0.25f, 0.25f, 0.0f), Quaternion.identity, new Color(1.0f, 1.0f, 0.0f, 0.3f), PlaneGizmo.PlaneType.XY);
-        xzHandle = CreatePlaneHandle("XZ_Handle", new Vector3(0.25f, 0.0f, 0.25f), Quaternion.Euler(90.0f, 0.0f, 0.0f), new Color(1.0f, 0.0f, 1.0f, 0.3f), PlaneGizmo.PlaneType.XZ);
-        yzHandle = CreatePlaneHandle("YZ_Handle", new Vector3(0.0f, 0.25f, 0.25f), Quaternion.Euler(0.0f, -90.0f, 0.0f), new Color(0.0f, 1.0f, 1.0f, 0.3f), PlaneGizmo.PlaneType.YZ);
+        if (xyHandle == null)
+            xyHandle = CreatePlaneHandle("XY_Handle", new Vector3(0.25f, 0.25f, 0.0f), Quaternion.identity, new Color(1.0f, 1.0f, 0.0f, 0.3f), PlaneGizmo.PlaneType.XY);
+        if (xzHandle == null)
+            xzHandle = CreatePlaneHandle("XZ_Handle", new Vector3(0.25f, 0.0f, 0.25f), Quaternion.Euler(90.0f, 0.0f, 0.0f), new Color(1.0f, 0.0f, 1.0f, 0.3f), PlaneGizmo.PlaneType.XZ);
+        if (yzHandle == null)
+            yzHandle = CreatePlaneHandle("YZ_Handle", new Vector3(0.0f, 0.25f, 0.25f), Quaternion.Euler(0.0f, -90.0f, 0.0f), new Color(0.0f, 1.0f, 1.0f, 0.3f), PlaneGizmo.PlaneType.YZ);
 
-        xRotHandle = CreateRotateHandle("X_Rotate", Vector3.zero, Quaternion.Euler(0.0f, 0.0f, 90.0f), Color.red, RotateGizmo.Axis.X);
-        yRotHandle = CreateRotateHandle("Y_Rotate", Vector3.zero, Quaternion.identity, Color.green, RotateGizmo.Axis.Y);
-        zRotHandle = CreateRotateHandle("Z_Rotate", Vector3.zero, Quaternion.Euler(90.0f, 0.0f, 0.0f), Color.blue, RotateGizmo.Axis.Z);
+        if (xRotHandle == null)
+            xRotHandle = CreateRotateHandle("X_Rotate", Vector3.zero, Quaternion.Euler(0.0f, 0.0f, 90.0f), Color.red, RotateGizmo.Axis.X);
+        if (yRotHandle == null)
+            yRotHandle = CreateRotateHandle("Y_Rotate", Vector3.zero, Quaternion.identity, Color.green, RotateGizmo.Axis.Y);
+        if (zRotHandle == null)
+            zRotHandle = CreateRotateHandle("Z_Rotate", Vector3.zero, Quaternion.Euler(90.0f, 0.0f, 0.0f), Color.blue, RotateGizmo.Axis.Z);
     }
 
     void RegisterHandles()
