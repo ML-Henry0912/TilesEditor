@@ -5,4 +5,6 @@ alwaysApply: true
 ---
 Rule Name: project-rule
 Description: |
+  - 有涉及修改或建立檔案時，優先修改與建立檔案，完成後才做文字說明。
   - 所有指令依照rules執行。
+  

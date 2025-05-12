@@ -1,6 +1,6 @@
 ---
 description: 
-globs: 
+globs: **/*.cs
 alwaysApply: false
 ---
 ---
@@ -11,18 +11,10 @@ alwaysApply: false
 ---
 
 # 基本規則
+- 每個右大括號 '}' 之前需保留完整一行空白。
 - 避免使用 `private` 修飾詞，除非我指定使用。
-- 每個右大括號 '}' 之前需保留一整行空白。
-
-# 建議補充規則
-- 函數、屬性、類別名稱一律使用 PascalCase。
-- 變數名稱使用 camelCase。
-- 每個函數之間保留一行空白。
-- 使用 4 個空白縮排。
-- 禁止行尾多餘空白。
-- 每行長度建議不超過 120 字元。
-- 註解請使用繁體中文。
+- 不要主動加入註解，除非我要求。
 
 # 規則說明
-- 若有自動化工具（如 EditorConfig、.editorconfig、lint），請一併遵循。
+- 若有自動化工具(如 EditorConfig、.editorconfig、lint) 請一併遵循。
 - 若有疑問，請優先詢問專案負責人或參考本檔案。
