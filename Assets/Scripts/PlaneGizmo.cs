@@ -3,7 +3,7 @@
 // 1. 用於在特定平面（如 XY、XZ、YZ）上進行拖曳操作的 Gizmo。
 // 2. 讓使用者可以在 2D 平面上移動物件。
 // 3. 本元件支援安全重複初始化，Initialize 可多次呼叫以覆蓋狀態，不會產生重複資源。
-// 4. 所有 Gizmo 材質由 ScriptableObject 統一管理，於建立時指定，顏色與透明度（80%）以 MaterialPropertyBlock 設定，避免記憶體浪費。
+// 4. 所有 Gizmo 材質由 ScriptableObject（GizmoMaterials）統一管理，於建立時指定，顏色與透明度（80%）以 MaterialPropertyBlock 設定，避免記憶體浪費與提升一致性。
 // 5. 本元件會自動產生正反兩面，確保雙面皆可顯示顏色與高光，反面僅作顯示不參與互動。
 // 6. 所有互動偵測皆以數學計算為主，不依賴 Collider，確保精確度與效能。
 // 7. 本元件為 TransformGizmo 的子物件，請勿手動移除或更改父子結構。
@@ -18,12 +18,13 @@ public class PlaneGizmo : GizmoBase
     Camera cam;
     float size;
 
-    public void Initialize(PlaneType type, Color color, Camera cam, float size)
+    public void Initialize(PlaneType type, Color color, TransformGizmo gizmo, float size)
     {
         planeType = type;
         baseColor = color;
         SetMaterialColor(color);
-        this.cam = cam;
+        this.gizmo = gizmo;
+        this.cam = gizmo.cam;
         this.size = size;
     }
 
@@ -63,7 +64,7 @@ public class PlaneGizmo : GizmoBase
         }
     }
 
-    public bool IsMouseOnPlaneGizmo()
+    public bool IsMouseOnGizmo()
     {
         Vector3 c = transform.position;
         Vector3 r = transform.right * size * 0.5f;
@@ -88,5 +89,18 @@ public class PlaneGizmo : GizmoBase
         for (int i = 0; i < 4; i++)
             sumArea += Mathf.Abs((screenCorners[i].x * (screenCorners[(i + 1) % 4].y - mouse.y) + screenCorners[(i + 1) % 4].x * (mouse.y - screenCorners[i].y) + mouse.x * (screenCorners[i].y - screenCorners[(i + 1) % 4].y)) / 2f);
         return Mathf.Abs(sumArea - quadArea) < 1.5f;
+    }
+
+    // 判斷此 handle 是否該顯示
+    public override bool ShouldBeVisible()
+    {
+        if (gizmo == null) return false;
+        switch (planeType)
+        {
+            case PlaneType.XY: return gizmo.translateX && gizmo.translateY;
+            case PlaneType.XZ: return gizmo.translateX && gizmo.translateZ;
+            case PlaneType.YZ: return gizmo.translateY && gizmo.translateZ;
+            default: return false;
+        }
     }
 }

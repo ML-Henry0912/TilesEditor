@@ -3,7 +3,7 @@
 // 1. 用於旋轉操作的 Gizmo，顯示三個圓環。
 // 2. 讓使用者可以分別對 X、Y、Z 軸進行精確旋轉。
 // 3. 本元件支援安全重複初始化，Initialize 可多次呼叫以覆蓋狀態，不會產生重複資源。
-// 4. 所有 Gizmo 材質由 ScriptableObject 統一管理，於建立時指定，顏色與透明度（80%）以 MaterialPropertyBlock 設定，避免記憶體浪費。
+// 4. 所有 Gizmo 材質由 ScriptableObject（GizmoMaterials）統一管理，於建立時指定，顏色與透明度（80%）以 MaterialPropertyBlock 設定，避免記憶體浪費與提升一致性。
 // 5. 所有互動偵測皆以數學計算為主，不依賴 Collider，確保精確度與效能。
 // 6. 本元件為 TransformGizmo 的子物件，請勿手動移除或更改父子結構。
 // =============================================
@@ -20,7 +20,7 @@ public class RotateGizmo : GizmoBase
     Camera cam;
     float thickness;
 
-    public void Initialize(Axis axisType, Color color, Camera cam, float thickness)
+    public void Initialize(Axis axisType, Color color, TransformGizmo gizmo, float thickness)
     {
         axis = axisType;
         baseColor = color;
@@ -32,7 +32,8 @@ public class RotateGizmo : GizmoBase
             case Axis.Y: WorldAxis = Vector3.up; break;
             case Axis.Z: WorldAxis = Vector3.forward; break;
         }
-        this.cam = cam;
+        this.gizmo = gizmo;
+        this.cam = gizmo.cam;
         this.thickness = thickness;
     }
 
@@ -57,6 +58,19 @@ public class RotateGizmo : GizmoBase
         float ellipseValue = (x * x) / (a * a) + (y * y) / (b * b);
         float epsilon = thickness / Mathf.Max(a, b);
         return (ellipseValue > (1 - epsilon)) && (ellipseValue < (1 + epsilon));
+    }
+
+    // 判斷此 handle 是否該顯示
+    public override bool ShouldBeVisible()
+    {
+        if (gizmo == null) return false;
+        switch (axis)
+        {
+            case Axis.X: return gizmo.rotateX;
+            case Axis.Y: return gizmo.rotateY;
+            case Axis.Z: return gizmo.rotateZ;
+            default: return false;
+        }
     }
 }
 

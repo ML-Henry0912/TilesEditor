@@ -24,6 +24,7 @@ public class TransformGizmo : MonoBehaviour
     const float AXIS_HANDLE_SCALE = 0.1f;
     const float AXIS_HANDLE_LENGTH = 0.8f;
     const float AXIS_HANDLE_THICKNESS = 16.0f;
+    const float RING_RADIUS = 1.2f;
     public const string GIZMO_TAG = "GizmoHandle";
 
     public Transform target;
@@ -65,16 +66,6 @@ public class TransformGizmo : MonoBehaviour
 
     bool initialized = false;
 
-
-    // 1. 定義 Handle 配置結構
-    public class GizmoHandleConfig
-    {
-        public GameObject handleObj;
-        public Func<TransformGizmo, bool> visibleCondition;
-    }
-
-    List<GizmoHandleConfig> handleConfigs = new List<GizmoHandleConfig>();
-
     public void Initialize(Transform target, Camera cam, GizmoMaterials materials)
     {
         this.target = target;
@@ -90,7 +81,6 @@ public class TransformGizmo : MonoBehaviour
             }
         }
         CreateAllHandles();
-        RegisterHandles();
         initialized = true;
         action = CheckHover;
     }
@@ -109,10 +99,10 @@ public class TransformGizmo : MonoBehaviour
 
     void UpdateHandleVisibility()
     {
-        foreach (var cfg in handleConfigs)
+        for (int _i = 0; _i < allGizmos.Length; _i++)
         {
-            if (cfg.handleObj != null)
-                cfg.handleObj.SetActive(cfg.visibleCondition(this));
+            GizmoBase gizmo = allGizmos[_i];
+            gizmo?.gameObject?.SetActive(gizmo?.ShouldBeVisible() ?? false);
         }
     }
 
@@ -130,39 +120,10 @@ public class TransformGizmo : MonoBehaviour
     {
         if (Input.GetMouseButtonDown(0))
         {
-            if (TryBeginDrag())
-            {
-                action = OnDrag;
-            }
+            TryBeginDrag();
+
         }
         else if (!TryHoverHandle())
-        {
-            action = CheckHover;
-        }
-    }
-
-    // 狀態：Drag，執行拖曳/旋轉
-    void OnDrag()
-    {
-        if (Input.GetMouseButtonUp(0))
-        {
-            EndDrag();
-            return;
-        }
-
-        if (activeAxis != null)
-        {
-            DragAxis();
-        }
-        else if (activePlane != null)
-        {
-            DragPlane();
-        }
-        else if (activeRotate != null)
-        {
-            DragRotate();
-        }
-        else
         {
             action = CheckHover;
         }
@@ -176,66 +137,65 @@ public class TransformGizmo : MonoBehaviour
             gizmo.ResetColor();
         }
 
-        float ringRadius = 1.0f * 1.2f;
         Vector3 center = target.position;
         bool hoverFound = false;
-        if (rotateY && yRotHandle != null && yRotHandle.IsMouseOnGizmo(center, transform.up, ringRadius))
+        if (rotateY && yRotHandle != null && yRotHandle.IsMouseOnGizmo(center, transform.up, RING_RADIUS))
         {
             yRotHandle.SetMaterialColor(Color.yellow);
             var mr = yRotHandle.GetComponent<MeshRenderer>();
             if (mr != null) mr.sharedMaterial = materials.hoverYellow;
             hoverFound = true;
         }
-        else if (rotateX && xRotHandle != null && xRotHandle.IsMouseOnGizmo(center, transform.right, ringRadius))
+        else if (rotateX && xRotHandle != null && xRotHandle.IsMouseOnGizmo(center, transform.right, RING_RADIUS))
         {
             xRotHandle.SetMaterialColor(Color.yellow);
             var mr = xRotHandle.GetComponent<MeshRenderer>();
             if (mr != null) mr.sharedMaterial = materials.hoverYellow;
             hoverFound = true;
         }
-        else if (rotateZ && zRotHandle != null && zRotHandle.IsMouseOnGizmo(center, transform.forward, ringRadius))
+        else if (rotateZ && zRotHandle != null && zRotHandle.IsMouseOnGizmo(center, transform.forward, RING_RADIUS))
         {
             zRotHandle.SetMaterialColor(Color.yellow);
             var mr = zRotHandle.GetComponent<MeshRenderer>();
             if (mr != null) mr.sharedMaterial = materials.hoverYellow;
             hoverFound = true;
         }
-        else if (translateX && xHandle != null && xHandle.IsMouseOnAxisGizmo(target.position, transform.right))
+        else if (translateX && xHandle != null && xHandle.IsMouseOnGizmo(target.position, transform.right))
         {
             xHandle.SetMaterialColor(Color.yellow);
             var mr = xHandle.GetComponent<MeshRenderer>();
             if (mr != null) mr.sharedMaterial = materials.hoverYellow;
             hoverFound = true;
         }
-        else if (translateY && yHandle != null && yHandle.IsMouseOnAxisGizmo(target.position, transform.up))
+        else if (translateY && yHandle != null && yHandle.IsMouseOnGizmo(target.position, transform.up))
         {
             yHandle.SetMaterialColor(Color.yellow);
             var mr = yHandle.GetComponent<MeshRenderer>();
             if (mr != null) mr.sharedMaterial = materials.hoverYellow;
             hoverFound = true;
         }
-        else if (translateZ && zHandle != null && zHandle.IsMouseOnAxisGizmo(target.position, transform.forward))
+        else if (translateZ && zHandle != null && zHandle.IsMouseOnGizmo(target.position, transform.forward))
         {
             zHandle.SetMaterialColor(Color.yellow);
             var mr = zHandle.GetComponent<MeshRenderer>();
             if (mr != null) mr.sharedMaterial = materials.hoverYellow;
             hoverFound = true;
         }
-        else if (translateX && translateY && xyHandle != null && xyHandle.IsMouseOnPlaneGizmo())
+        else if (translateX && translateY && xyHandle != null && xyHandle.IsMouseOnGizmo())
         {
             xyHandle.SetMaterialColor(Color.yellow);
             var mr = xyHandle.GetComponent<MeshRenderer>();
             if (mr != null) mr.sharedMaterial = materials.hoverYellow;
             hoverFound = true;
         }
-        else if (translateX && translateZ && xzHandle != null && xzHandle.IsMouseOnPlaneGizmo())
+        else if (translateX && translateZ && xzHandle != null && xzHandle.IsMouseOnGizmo())
         {
             xzHandle.SetMaterialColor(Color.yellow);
             var mr = xzHandle.GetComponent<MeshRenderer>();
             if (mr != null) mr.sharedMaterial = materials.hoverYellow;
             hoverFound = true;
         }
-        else if (translateY && translateZ && yzHandle != null && yzHandle.IsMouseOnPlaneGizmo())
+        else if (translateY && translateZ && yzHandle != null && yzHandle.IsMouseOnGizmo())
         {
             yzHandle.SetMaterialColor(Color.yellow);
             var mr = yzHandle.GetComponent<MeshRenderer>();
@@ -248,11 +208,11 @@ public class TransformGizmo : MonoBehaviour
     // 嘗試開始拖曳，根據 hover 的 handle 決定拖曳類型
     bool TryBeginDrag()
     {
-        float ringRadius = 1.0f * 1.2f;
         Vector3 center = target.position;
-        if (rotateY && yRotHandle != null && yRotHandle.IsMouseOnGizmo(center, transform.up, ringRadius))
+        if (rotateY && yRotHandle != null && yRotHandle.IsMouseOnGizmo(center, transform.up, RING_RADIUS))
         {
             activeRotate = yRotHandle;
+            action = DragRotate;
             rotationPlane = new Plane(transform.up, center);
             Ray ray = cam.ScreenPointToRay(Input.mousePosition);
             if (rotationPlane.Raycast(ray, out float enter))
@@ -262,9 +222,10 @@ public class TransformGizmo : MonoBehaviour
                 return true;
             }
         }
-        else if (rotateX && xRotHandle != null && xRotHandle.IsMouseOnGizmo(center, transform.right, ringRadius))
+        else if (rotateX && xRotHandle != null && xRotHandle.IsMouseOnGizmo(center, transform.right, RING_RADIUS))
         {
             activeRotate = xRotHandle;
+            action = DragRotate;
             rotationPlane = new Plane(transform.right, center);
             Ray ray = cam.ScreenPointToRay(Input.mousePosition);
             if (rotationPlane.Raycast(ray, out float enter))
@@ -274,9 +235,10 @@ public class TransformGizmo : MonoBehaviour
                 return true;
             }
         }
-        else if (rotateZ && zRotHandle != null && zRotHandle.IsMouseOnGizmo(center, transform.forward, ringRadius))
+        else if (rotateZ && zRotHandle != null && zRotHandle.IsMouseOnGizmo(center, transform.forward, RING_RADIUS))
         {
             activeRotate = zRotHandle;
+            action = DragRotate;
             rotationPlane = new Plane(transform.forward, center);
             Ray ray = cam.ScreenPointToRay(Input.mousePosition);
             if (rotationPlane.Raycast(ray, out float enter))
@@ -286,34 +248,38 @@ public class TransformGizmo : MonoBehaviour
                 return true;
             }
         }
-        else if (translateX && xHandle != null && xHandle.IsMouseOnAxisGizmo(target.position, transform.right))
+        else if (translateX && xHandle != null && xHandle.IsMouseOnGizmo(target.position, transform.right))
         {
             activeAxis = xHandle;
-            Vector3 axisDir = transform.TransformDirection(activeAxis.WorldDirection).normalized;
+            action = DragAxis;
+            Vector3 axisDir = transform.TransformDirection(xHandle.WorldDirection).normalized;
             dragStartPos = GetClosestPointOnAxis(cam.ScreenPointToRay(Input.mousePosition), target.position, axisDir);
             objectStartPos = target.position;
             return true;
         }
-        else if (translateY && yHandle != null && yHandle.IsMouseOnAxisGizmo(target.position, transform.up))
+        else if (translateY && yHandle != null && yHandle.IsMouseOnGizmo(target.position, transform.up))
         {
             activeAxis = yHandle;
-            Vector3 axisDir = transform.TransformDirection(activeAxis.WorldDirection).normalized;
+            action = DragAxis;
+            Vector3 axisDir = transform.TransformDirection(yHandle.WorldDirection).normalized;
             dragStartPos = GetClosestPointOnAxis(cam.ScreenPointToRay(Input.mousePosition), target.position, axisDir);
             objectStartPos = target.position;
             return true;
         }
-        else if (translateZ && zHandle != null && zHandle.IsMouseOnAxisGizmo(target.position, transform.forward))
+        else if (translateZ && zHandle != null && zHandle.IsMouseOnGizmo(target.position, transform.forward))
         {
             activeAxis = zHandle;
-            Vector3 axisDir = transform.TransformDirection(activeAxis.WorldDirection).normalized;
+            action = DragAxis;
+            Vector3 axisDir = transform.TransformDirection(zHandle.WorldDirection).normalized;
             dragStartPos = GetClosestPointOnAxis(cam.ScreenPointToRay(Input.mousePosition), target.position, axisDir);
             objectStartPos = target.position;
             return true;
         }
-        else if (translateX && translateY && xyHandle != null && xyHandle.IsMouseOnPlaneGizmo())
+        else if (translateX && translateY && xyHandle != null && xyHandle.IsMouseOnGizmo())
         {
             activePlane = xyHandle;
-            Plane dragPlane = activePlane.GetDragPlane(transform, target.position);
+            action = DragPlane;
+            Plane dragPlane = xyHandle.GetDragPlane(transform, target.position);
             Ray ray = cam.ScreenPointToRay(Input.mousePosition);
             if (!dragPlane.Raycast(ray, out float enter))
             {
@@ -325,10 +291,11 @@ public class TransformGizmo : MonoBehaviour
             objectStartPos = target.position;
             return true;
         }
-        else if (translateX && translateZ && xzHandle != null && xzHandle.IsMouseOnPlaneGizmo())
+        else if (translateX && translateZ && xzHandle != null && xzHandle.IsMouseOnGizmo())
         {
             activePlane = xzHandle;
-            Plane dragPlane = activePlane.GetDragPlane(transform, target.position);
+            action = DragPlane;
+            Plane dragPlane = xzHandle.GetDragPlane(transform, target.position);
             Ray ray = cam.ScreenPointToRay(Input.mousePosition);
             if (!dragPlane.Raycast(ray, out float enter))
             {
@@ -340,10 +307,11 @@ public class TransformGizmo : MonoBehaviour
             objectStartPos = target.position;
             return true;
         }
-        else if (translateY && translateZ && yzHandle != null && yzHandle.IsMouseOnPlaneGizmo())
+        else if (translateY && translateZ && yzHandle != null && yzHandle.IsMouseOnGizmo())
         {
             activePlane = yzHandle;
-            Plane dragPlane = activePlane.GetDragPlane(transform, target.position);
+            action = DragPlane;
+            Plane dragPlane = yzHandle.GetDragPlane(transform, target.position);
             Ray ray = cam.ScreenPointToRay(Input.mousePosition);
             if (!dragPlane.Raycast(ray, out float enter))
             {
@@ -361,6 +329,12 @@ public class TransformGizmo : MonoBehaviour
     // 拖曳軸
     void DragAxis()
     {
+        if (Input.GetMouseButtonUp(0))
+        {
+            EndDrag();
+            return;
+        }
+
         Ray ray = cam.ScreenPointToRay(Input.mousePosition);
         Vector3 axisDir = transform.TransformDirection(activeAxis.WorldDirection).normalized;
         Vector3 current = GetClosestPointOnAxis(ray, objectStartPos, axisDir);
@@ -372,6 +346,12 @@ public class TransformGizmo : MonoBehaviour
     // 拖曳平面
     void DragPlane()
     {
+        if (Input.GetMouseButtonUp(0))
+        {
+            EndDrag();
+            return;
+        }
+
         Ray ray = cam.ScreenPointToRay(Input.mousePosition);
         Plane dragPlane = activePlane.GetDragPlane(transform, target.position);
         if (dragPlane.Raycast(ray, out float enter))
@@ -386,6 +366,12 @@ public class TransformGizmo : MonoBehaviour
     // 拖曳旋轉
     void DragRotate()
     {
+        if (Input.GetMouseButtonUp(0))
+        {
+            EndDrag();
+            return;
+        }
+
         Ray ray = cam.ScreenPointToRay(Input.mousePosition);
         if (rotationPlane.Raycast(ray, out float enter))
         {
@@ -464,56 +450,6 @@ public class TransformGizmo : MonoBehaviour
 
     }
 
-    void RegisterHandles()
-    {
-        handleConfigs.Clear();
-        handleConfigs.Add(new GizmoHandleConfig
-        {
-            handleObj = xHandle?.gameObject,
-            visibleCondition = g => g.translateX
-        });
-        handleConfigs.Add(new GizmoHandleConfig
-        {
-            handleObj = yHandle?.gameObject,
-            visibleCondition = g => g.translateY
-        });
-        handleConfigs.Add(new GizmoHandleConfig
-        {
-            handleObj = zHandle?.gameObject,
-            visibleCondition = g => g.translateZ
-        });
-        handleConfigs.Add(new GizmoHandleConfig
-        {
-            handleObj = xyHandle?.gameObject,
-            visibleCondition = g => g.translateX && g.translateY
-        });
-        handleConfigs.Add(new GizmoHandleConfig
-        {
-            handleObj = xzHandle?.gameObject,
-            visibleCondition = g => g.translateX && g.translateZ
-        });
-        handleConfigs.Add(new GizmoHandleConfig
-        {
-            handleObj = yzHandle?.gameObject,
-            visibleCondition = g => g.translateY && g.translateZ
-        });
-        handleConfigs.Add(new GizmoHandleConfig
-        {
-            handleObj = xRotHandle?.gameObject,
-            visibleCondition = g => g.rotateX
-        });
-        handleConfigs.Add(new GizmoHandleConfig
-        {
-            handleObj = yRotHandle?.gameObject,
-            visibleCondition = g => g.rotateY
-        });
-        handleConfigs.Add(new GizmoHandleConfig
-        {
-            handleObj = zRotHandle?.gameObject,
-            visibleCondition = g => g.rotateZ
-        });
-    }
-
     AxisGizmo CreateAxisHandle(string name, Vector3 localPos, Quaternion localRot, Color color, AxisGizmo.Axis axis)
     {
         GameObject go = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
@@ -524,7 +460,7 @@ public class TransformGizmo : MonoBehaviour
         go.transform.localRotation = localRot;
         go.transform.localScale = new Vector3(AXIS_HANDLE_SCALE, AXIS_HANDLE_LENGTH, AXIS_HANDLE_SCALE);
         var axisGizmo = go.AddComponent<AxisGizmo>();
-        axisGizmo.Initialize(axis, color, cam, AXIS_HANDLE_THICKNESS, AXIS_HANDLE_THICKNESS);
+        axisGizmo.Initialize(axis, color, this, AXIS_HANDLE_THICKNESS, AXIS_HANDLE_THICKNESS);
         // 指定材質
         var renderer = go.GetComponent<MeshRenderer>();
         if (axis == AxisGizmo.Axis.X) renderer.sharedMaterial = materials.xRed;
@@ -543,7 +479,7 @@ public class TransformGizmo : MonoBehaviour
         go.transform.localRotation = localRot;
         go.transform.localScale = Vector3.one * size;
         var planeGizmo = go.AddComponent<PlaneGizmo>();
-        planeGizmo.Initialize(type, color, cam, size);
+        planeGizmo.Initialize(type, color, this, size);
         // 指定材質
         var renderer = go.GetComponent<MeshRenderer>();
         if (type == PlaneGizmo.PlaneType.XY) renderer.sharedMaterial = materials.xyYellow;
@@ -578,7 +514,7 @@ public class TransformGizmo : MonoBehaviour
         var mr = go.AddComponent<MeshRenderer>();
         mf.mesh = TorusMeshGenerator.Generate(1.0f, 0.05f, 64, 12);
         var gizmo = go.AddComponent<RotateGizmo>();
-        gizmo.Initialize(axis, color, cam, AXIS_HANDLE_THICKNESS);
+        gizmo.Initialize(axis, color, this, AXIS_HANDLE_THICKNESS);
         // 指定材質
         if (axis == RotateGizmo.Axis.X) mr.sharedMaterial = materials.xRed;
         else if (axis == RotateGizmo.Axis.Y) mr.sharedMaterial = materials.yGreen;

@@ -9,6 +9,7 @@ using UnityEngine;
 // =============================================
 public abstract class GizmoBase : MonoBehaviour
 {
+    protected TransformGizmo gizmo;
     public Color baseColor;
     protected MaterialPropertyBlock propertyBlock;
 
@@ -28,5 +29,11 @@ public abstract class GizmoBase : MonoBehaviour
     public void ResetColor()
     {
         SetMaterialColor(baseColor);
+    }
+
+    // 可覆寫的顯示條件，預設為 true
+    public virtual bool ShouldBeVisible()
+    {
+        return true;
     }
 }
