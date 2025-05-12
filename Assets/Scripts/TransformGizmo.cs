@@ -42,6 +42,7 @@ public class TransformGizmo : MonoBehaviour
     AxisGizmo xHandle, yHandle, zHandle;
     PlaneGizmo xyHandle, xzHandle, yzHandle;
     RotateGizmo xRotHandle, yRotHandle, zRotHandle;
+    List<GizmoBase> allGizmos = new();
 
     public GizmoMaterials materials;
 
@@ -160,9 +161,10 @@ public class TransformGizmo : MonoBehaviour
     // 嘗試 hover 到 handle，並處理 hover 效果
     bool TryHoverHandle()
     {
-        xHandle?.ResetColor(); yHandle?.ResetColor(); zHandle?.ResetColor();
-        xyHandle?.ResetColor(); xzHandle?.ResetColor(); yzHandle?.ResetColor();
-        xRotHandle?.ResetColor(); yRotHandle?.ResetColor(); zRotHandle?.ResetColor();
+        foreach (var _gm in allGizmos)
+        {
+            _gm.ResetColor();
+        }
 
         float ringRadius = 1.0f * 1.2f;
         Vector3 center = target.position;
@@ -428,6 +430,8 @@ public class TransformGizmo : MonoBehaviour
 
     void CreateAllHandles()
     {
+        allGizmos.Clear();
+
         if (xHandle == null)
             xHandle = CreateAxisHandle("X_Handle", new Vector3(AXIS_HANDLE_OFFSET, 0.0f, 0.0f), Quaternion.Euler(0.0f, 0.0f, -90.0f), Color.red, AxisGizmo.Axis.X);
         if (yHandle == null)
@@ -448,6 +452,19 @@ public class TransformGizmo : MonoBehaviour
             yRotHandle = CreateRotateHandle("Y_Rotate", Vector3.zero, Quaternion.identity, Color.green, RotateGizmo.Axis.Y);
         if (zRotHandle == null)
             zRotHandle = CreateRotateHandle("Z_Rotate", Vector3.zero, Quaternion.Euler(90.0f, 0.0f, 0.0f), Color.blue, RotateGizmo.Axis.Z);
+
+        allGizmos.Add(xHandle);
+        allGizmos.Add(yHandle);
+        allGizmos.Add(zHandle);
+
+        allGizmos.Add(xyHandle);
+        allGizmos.Add(xzHandle);
+        allGizmos.Add(yzHandle);
+
+        allGizmos.Add(xRotHandle);
+        allGizmos.Add(yRotHandle);
+        allGizmos.Add(zRotHandle);
+
     }
 
     void RegisterHandles()
@@ -640,4 +657,6 @@ public class TransformGizmo : MonoBehaviour
             return mesh;
         }
     }
+
+
 }
