@@ -20,7 +20,7 @@ namespace TilesEditor
 
         public TileBehavior[] tiles;
 
-        TransformGizmo gizmo;
+        TileGizmo gizmo;
 
         private void Start()
         {
@@ -62,13 +62,13 @@ namespace TilesEditor
                         // 初始化 gizmo 讓使用者編輯該物件
                         if (gizmo == null)
                         {
-                            gizmo = gizmoRoot.AddComponent<TransformGizmo>();
+                            gizmo = gizmoRoot.AddComponent<TileGizmo>();
                         }
-                        gizmo.Initialize(target, cam, materials);
+                        gizmo.InitializeTile(target, cam, materials);
                         // 關閉 rotation X, Y 與 translate Z
-                        gizmo.rotateX = false;
-                        gizmo.rotateY = false;
-                        gizmo.translateZ = false;
+                        //gizmo.rotateX = false;
+                        //gizmo.rotateY = false;
+                        //gizmo.translateZ = false;
                     }
                 }
             }

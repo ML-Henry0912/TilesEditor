@@ -584,6 +584,46 @@ namespace TilesEditor
             }
         }
 
+        protected void SetPlaneGizmoProperties(PlaneGizmo.PlaneType type, Vector3 position, Color color)
+        {
+            PlaneGizmo targetGizmo = null;
+            switch (type)
+            {
+                case PlaneGizmo.PlaneType.XY:
+                    targetGizmo = xyHandle;
+                    break;
+                case PlaneGizmo.PlaneType.XZ:
+                    targetGizmo = xzHandle;
+                    break;
+                case PlaneGizmo.PlaneType.YZ:
+                    targetGizmo = yzHandle;
+                    break;
+            }
+
+            if (targetGizmo == null) return;
+
+            targetGizmo.transform.localPosition = position;
+
+
+            targetGizmo.SetMaterialColor(color);
+            var renderer = targetGizmo.GetComponent<MeshRenderer>();
+            if (renderer != null)
+            {
+                if (type == PlaneGizmo.PlaneType.XY) renderer.sharedMaterial = materials.xyYellow;
+                else if (type == PlaneGizmo.PlaneType.XZ) renderer.sharedMaterial = materials.xzMagenta;
+                else if (type == PlaneGizmo.PlaneType.YZ) renderer.sharedMaterial = materials.yzCyan;
+            }
+
+            // 更新反面材質
+            var backRenderer = targetGizmo.transform.Find(targetGizmo.name + "_Back")?.GetComponent<MeshRenderer>();
+            if (backRenderer != null)
+            {
+                if (type == PlaneGizmo.PlaneType.XY) backRenderer.sharedMaterial = materials.xyYellow;
+                else if (type == PlaneGizmo.PlaneType.XZ) backRenderer.sharedMaterial = materials.xzMagenta;
+                else if (type == PlaneGizmo.PlaneType.YZ) backRenderer.sharedMaterial = materials.yzCyan;
+            }
+
+        }
 
     }
 }
