@@ -36,11 +36,6 @@ public class RotateGizmo : GizmoBase
         this.thickness = thickness;
     }
 
-    protected override Material CreateDefaultMaterial()
-    {
-        return new Material(Shader.Find("Unlit/Color"));
-    }
-
     /// <summary>
     /// 判斷滑鼠是否在螢幕上的旋轉 Gizmo 橢圓環上（不使用 Collider）。
     /// </summary>

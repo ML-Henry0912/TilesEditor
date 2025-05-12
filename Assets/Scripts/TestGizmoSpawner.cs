@@ -9,6 +9,7 @@ public class TestGizmoSpawner : MonoBehaviour
 {
     public Camera cam;
     public Transform target;
+    public GizmoMaterials materials;
 
     GameObject spawnedObj;
     TransformGizmo gizmo;
@@ -32,7 +33,7 @@ public class TestGizmoSpawner : MonoBehaviour
                 spawnedObj.transform.position = Vector3.zero;
                 spawnedObj.transform.localScale = Vector3.one;
                 gizmo = spawnedObj.AddComponent<TransformGizmo>();
-                gizmo.Initialize(target, cam);
+                gizmo.Initialize(target, cam, materials);
             }
         }
         else

@@ -10,17 +10,10 @@ using UnityEngine;
 public abstract class GizmoBase : MonoBehaviour
 {
     public Color baseColor;
-    [Tooltip("請在 Inspector 指定一個 Unlit/Color 或 Unlit/Texture 材質，避免 WebGL 找不到 Shader。")]
-    public static Material sharedMaterial;
     protected MaterialPropertyBlock propertyBlock;
 
     public virtual void SetMaterialColor(Color color)
     {
-        if (sharedMaterial == null)
-        {
-            Debug.LogError("GizmoBase.sharedMaterial 尚未指定，請在 Inspector 指定一個 Unlit/Color 或 Unlit/Texture 材質，否則 WebGL 可能無法顯示 Gizmo！");
-            return;
-        }
         if (propertyBlock == null)
             propertyBlock = new MaterialPropertyBlock();
         color.a = 0.8f; // 預設 80% 透明度
@@ -28,7 +21,6 @@ public abstract class GizmoBase : MonoBehaviour
         var renderer = GetComponent<MeshRenderer>();
         if (renderer != null)
         {
-            renderer.sharedMaterial = sharedMaterial;
             renderer.SetPropertyBlock(propertyBlock);
         }
     }
@@ -36,14 +28,5 @@ public abstract class GizmoBase : MonoBehaviour
     public void ResetColor()
     {
         SetMaterialColor(baseColor);
-    }
-
-    protected virtual Material CreateDefaultMaterial()
-    {
-        if (sharedMaterial == null)
-        {
-            Debug.LogError("GizmoBase.sharedMaterial 尚未指定，請在 Inspector 指定一個 Unlit/Color 或 Unlit/Texture 材質，否則 WebGL 可能無法顯示 Gizmo！");
-        }
-        return sharedMaterial;
     }
 }

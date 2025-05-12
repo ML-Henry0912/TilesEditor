@@ -34,6 +34,8 @@ public class TransformGizmo : MonoBehaviour
     PlaneGizmo xyHandle, xzHandle, yzHandle;
     RotateGizmo xRotHandle, yRotHandle, zRotHandle;
 
+    public GizmoMaterials materials;
+
     Vector3 dragStartPos, objectStartPos;
     AxisGizmo activeAxis;
     PlaneGizmo activePlane;
@@ -66,10 +68,11 @@ public class TransformGizmo : MonoBehaviour
 
     List<GizmoHandleConfig> handleConfigs = new List<GizmoHandleConfig>();
 
-    public void Initialize(Transform target, Camera cam)
+    public void Initialize(Transform target, Camera cam, GizmoMaterials materials)
     {
         this.target = target;
         this.cam = cam;
+        this.materials = materials;
         if (xHandle == null || yHandle == null || zHandle == null ||
             xyHandle == null || xzHandle == null || yzHandle == null ||
             xRotHandle == null || yRotHandle == null || zRotHandle == null)
@@ -167,46 +170,64 @@ public class TransformGizmo : MonoBehaviour
         if (rotateY && yRotHandle != null && yRotHandle.IsMouseOnGizmo(center, transform.up, ringRadius))
         {
             yRotHandle.SetMaterialColor(Color.yellow);
+            var mr = yRotHandle.GetComponent<MeshRenderer>();
+            if (mr != null) mr.sharedMaterial = materials.hoverYellow;
             hoverFound = true;
         }
         else if (rotateX && xRotHandle != null && xRotHandle.IsMouseOnGizmo(center, transform.right, ringRadius))
         {
             xRotHandle.SetMaterialColor(Color.yellow);
+            var mr = xRotHandle.GetComponent<MeshRenderer>();
+            if (mr != null) mr.sharedMaterial = materials.hoverYellow;
             hoverFound = true;
         }
         else if (rotateZ && zRotHandle != null && zRotHandle.IsMouseOnGizmo(center, transform.forward, ringRadius))
         {
             zRotHandle.SetMaterialColor(Color.yellow);
+            var mr = zRotHandle.GetComponent<MeshRenderer>();
+            if (mr != null) mr.sharedMaterial = materials.hoverYellow;
             hoverFound = true;
         }
         else if (translateX && xHandle != null && xHandle.IsMouseOnAxisGizmo(target.position, transform.right))
         {
             xHandle.SetMaterialColor(Color.yellow);
+            var mr = xHandle.GetComponent<MeshRenderer>();
+            if (mr != null) mr.sharedMaterial = materials.hoverYellow;
             hoverFound = true;
         }
         else if (translateY && yHandle != null && yHandle.IsMouseOnAxisGizmo(target.position, transform.up))
         {
             yHandle.SetMaterialColor(Color.yellow);
+            var mr = yHandle.GetComponent<MeshRenderer>();
+            if (mr != null) mr.sharedMaterial = materials.hoverYellow;
             hoverFound = true;
         }
         else if (translateZ && zHandle != null && zHandle.IsMouseOnAxisGizmo(target.position, transform.forward))
         {
             zHandle.SetMaterialColor(Color.yellow);
+            var mr = zHandle.GetComponent<MeshRenderer>();
+            if (mr != null) mr.sharedMaterial = materials.hoverYellow;
             hoverFound = true;
         }
         else if (translateX && translateY && xyHandle != null && xyHandle.IsMouseOnPlaneGizmo())
         {
             xyHandle.SetMaterialColor(Color.yellow);
+            var mr = xyHandle.GetComponent<MeshRenderer>();
+            if (mr != null) mr.sharedMaterial = materials.hoverYellow;
             hoverFound = true;
         }
         else if (translateX && translateZ && xzHandle != null && xzHandle.IsMouseOnPlaneGizmo())
         {
             xzHandle.SetMaterialColor(Color.yellow);
+            var mr = xzHandle.GetComponent<MeshRenderer>();
+            if (mr != null) mr.sharedMaterial = materials.hoverYellow;
             hoverFound = true;
         }
         else if (translateY && translateZ && yzHandle != null && yzHandle.IsMouseOnPlaneGizmo())
         {
             yzHandle.SetMaterialColor(Color.yellow);
+            var mr = yzHandle.GetComponent<MeshRenderer>();
+            if (mr != null) mr.sharedMaterial = materials.hoverYellow;
             hoverFound = true;
         }
         return hoverFound;
@@ -490,6 +511,11 @@ public class TransformGizmo : MonoBehaviour
         go.transform.localScale = new Vector3(AXIS_HANDLE_SCALE, AXIS_HANDLE_LENGTH, AXIS_HANDLE_SCALE);
         var axisGizmo = go.AddComponent<AxisGizmo>();
         axisGizmo.Initialize(axis, color, cam, AXIS_HANDLE_THICKNESS, AXIS_HANDLE_THICKNESS);
+        // 指定材質
+        var renderer = go.GetComponent<MeshRenderer>();
+        if (axis == AxisGizmo.Axis.X) renderer.sharedMaterial = materials.xRed;
+        else if (axis == AxisGizmo.Axis.Y) renderer.sharedMaterial = materials.yGreen;
+        else if (axis == AxisGizmo.Axis.Z) renderer.sharedMaterial = materials.zBlue;
         return axisGizmo;
     }
 
@@ -504,8 +530,12 @@ public class TransformGizmo : MonoBehaviour
         go.transform.localScale = Vector3.one * size;
         var planeGizmo = go.AddComponent<PlaneGizmo>();
         planeGizmo.Initialize(type, color, cam, size);
-
-        // 產生反面，只加 MeshRenderer，不加 PlaneGizmo 與 Collider
+        // 指定材質
+        var renderer = go.GetComponent<MeshRenderer>();
+        if (type == PlaneGizmo.PlaneType.XY) renderer.sharedMaterial = materials.xyYellow;
+        else if (type == PlaneGizmo.PlaneType.XZ) renderer.sharedMaterial = materials.xzMagenta;
+        else if (type == PlaneGizmo.PlaneType.YZ) renderer.sharedMaterial = materials.yzCyan;
+        // 產生反面
         GameObject back = GameObject.CreatePrimitive(PrimitiveType.Quad);
         back.name = name + "_Back";
         back.tag = GIZMO_TAG;
@@ -513,19 +543,12 @@ public class TransformGizmo : MonoBehaviour
         back.transform.localPosition = Vector3.zero;
         back.transform.localRotation = Quaternion.Euler(0, 180, 0);
         back.transform.localScale = Vector3.one;
-        // 移除 Collider
         var backCollider = back.GetComponent<Collider>();
         if (backCollider != null) DestroyImmediate(backCollider);
-        // 設定共用材質與顏色
         var backRenderer = back.GetComponent<MeshRenderer>();
-        if (backRenderer != null)
-        {
-            backRenderer.sharedMaterial = GizmoBase.sharedMaterial;
-            var block = new MaterialPropertyBlock();
-            Color backColor = color; backColor.a = 0.8f;
-            block.SetColor("_Color", backColor);
-            backRenderer.SetPropertyBlock(block);
-        }
+        if (type == PlaneGizmo.PlaneType.XY) backRenderer.sharedMaterial = materials.xyYellow;
+        else if (type == PlaneGizmo.PlaneType.XZ) backRenderer.sharedMaterial = materials.xzMagenta;
+        else if (type == PlaneGizmo.PlaneType.YZ) backRenderer.sharedMaterial = materials.yzCyan;
         return planeGizmo;
     }
 
@@ -542,6 +565,10 @@ public class TransformGizmo : MonoBehaviour
         mf.mesh = TorusMeshGenerator.Generate(1.0f, 0.05f, 64, 12);
         var gizmo = go.AddComponent<RotateGizmo>();
         gizmo.Initialize(axis, color, cam, AXIS_HANDLE_THICKNESS);
+        // 指定材質
+        if (axis == RotateGizmo.Axis.X) mr.sharedMaterial = materials.xRed;
+        else if (axis == RotateGizmo.Axis.Y) mr.sharedMaterial = materials.yGreen;
+        else if (axis == RotateGizmo.Axis.Z) mr.sharedMaterial = materials.zBlue;
         return gizmo;
     }
 

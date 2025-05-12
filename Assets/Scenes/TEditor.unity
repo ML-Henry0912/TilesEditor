@@ -153,6 +153,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cam: {fileID: 1731656727}
   target: {fileID: 2027569927}
+  materials: {fileID: 11400000, guid: 2589fe00ab7ae4388bae05c991a83044, type: 2}
 --- !u!4 &1448600400
 Transform:
   m_ObjectHideFlags: 0

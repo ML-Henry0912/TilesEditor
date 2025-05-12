@@ -27,12 +27,6 @@ public class PlaneGizmo : GizmoBase
         this.size = size;
     }
 
-    protected override Material CreateDefaultMaterial()
-    {
-        // 使用 GizmoBase 的共用材質
-        return base.CreateDefaultMaterial();
-    }
-
     public override void SetMaterialColor(Color color)
     {
         if (propertyBlock == null)
@@ -42,7 +36,6 @@ public class PlaneGizmo : GizmoBase
         var renderer = GetComponent<MeshRenderer>();
         if (renderer != null)
         {
-            renderer.sharedMaterial = sharedMaterial;
             renderer.SetPropertyBlock(propertyBlock);
         }
         // 設定反面

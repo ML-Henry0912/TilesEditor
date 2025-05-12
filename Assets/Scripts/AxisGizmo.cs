@@ -37,11 +37,6 @@ public class AxisGizmo : GizmoBase
         this.thickness = thickness;
     }
 
-    protected override Material CreateDefaultMaterial()
-    {
-        return new Material(Shader.Find("Unlit/Color"));
-    }
-
     public bool IsMouseOnAxisGizmo(Vector3 axisOrigin, Vector3 axisDir)
     {
         Vector3 a = axisOrigin - axisDir * length * 0.5f;

@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 608c9f6abfef6452fbd9a977c6574533, type: 3}
   m_Name: GizmoMaterials
   m_EditorClassIdentifier: 
-  xRed: {fileID: 0}
-  yGreen: {fileID: 0}
-  zBlue: {fileID: 0}
-  xyYellow: {fileID: 0}
-  xzMagenta: {fileID: 0}
-  yzCyan: {fileID: 0}
-  hoverYellow: {fileID: 0}
+  xRed: {fileID: 2100000, guid: 7dba4b5e3af0c42c89a9c2cda3d9c928, type: 2}
+  yGreen: {fileID: 2100000, guid: 4383a1de055624ae4b06c5cfdd3fe173, type: 2}
+  zBlue: {fileID: 2100000, guid: 09a2dc99e3b1a46f5b6fa057f8248e8c, type: 2}
+  xyYellow: {fileID: 2100000, guid: 8a827fbe98c3c412d8789c665e36bca5, type: 2}
+  xzMagenta: {fileID: 2100000, guid: 91624aa7a63c24b41865f92f152baeab, type: 2}
+  yzCyan: {fileID: 2100000, guid: d9a6893eb64fe4cf7bd00d749e5fa60b, type: 2}
+  hoverYellow: {fileID: 2100000, guid: 8970e6d2a626e4172aebdffae002bea6, type: 2}
