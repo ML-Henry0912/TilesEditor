@@ -47,6 +47,16 @@ public class TransformGizmo : MonoBehaviour
 
     bool initialized = false;
 
+    // === 常數定義 ===
+    const float AXIS_HANDLE_OFFSET = 0.75f;
+    const float PLANE_HANDLE_OFFSET = 0.55f;
+    //const float PLANE_HANDLE_SIZE = 0.5f * 1.5f;
+    const float PLANE_HANDLE_SIZE = 0.5f;
+    const float ROTATE_HANDLE_SCALE = 1.2f;
+    const float AXIS_HANDLE_SCALE = 0.1f;
+    const float AXIS_HANDLE_LENGTH = 0.8f;
+    const float AXIS_HANDLE_THICKNESS = 16.0f;
+
     // 1. 定義 Handle 配置結構
     public class GizmoHandleConfig
     {
@@ -398,18 +408,18 @@ public class TransformGizmo : MonoBehaviour
     void CreateAllHandles()
     {
         if (xHandle == null)
-            xHandle = CreateAxisHandle("X_Handle", new Vector3(0.5f, 0.0f, 0.0f), Quaternion.Euler(0.0f, 0.0f, -90.0f), Color.red, AxisGizmo.Axis.X);
+            xHandle = CreateAxisHandle("X_Handle", new Vector3(AXIS_HANDLE_OFFSET, 0.0f, 0.0f), Quaternion.Euler(0.0f, 0.0f, -90.0f), Color.red, AxisGizmo.Axis.X);
         if (yHandle == null)
-            yHandle = CreateAxisHandle("Y_Handle", new Vector3(0.0f, 0.5f, 0.0f), Quaternion.identity, Color.green, AxisGizmo.Axis.Y);
+            yHandle = CreateAxisHandle("Y_Handle", new Vector3(0.0f, AXIS_HANDLE_OFFSET, 0.0f), Quaternion.identity, Color.green, AxisGizmo.Axis.Y);
         if (zHandle == null)
-            zHandle = CreateAxisHandle("Z_Handle", new Vector3(0.0f, 0.0f, 0.5f), Quaternion.Euler(90.0f, 0.0f, 0.0f), Color.blue, AxisGizmo.Axis.Z);
+            zHandle = CreateAxisHandle("Z_Handle", new Vector3(0.0f, 0.0f, AXIS_HANDLE_OFFSET), Quaternion.Euler(90.0f, 0.0f, 0.0f), Color.blue, AxisGizmo.Axis.Z);
 
         if (xyHandle == null)
-            xyHandle = CreatePlaneHandle("XY_Handle", new Vector3(0.25f, 0.25f, 0.0f), Quaternion.identity, new Color(1.0f, 1.0f, 0.0f, 0.3f), PlaneGizmo.PlaneType.XY);
+            xyHandle = CreatePlaneHandle("XY_Handle", new Vector3(PLANE_HANDLE_OFFSET, PLANE_HANDLE_OFFSET, 0.0f), Quaternion.identity, new Color(1.0f, 1.0f, 0.0f, 0.3f), PlaneGizmo.PlaneType.XY, PLANE_HANDLE_SIZE);
         if (xzHandle == null)
-            xzHandle = CreatePlaneHandle("XZ_Handle", new Vector3(0.25f, 0.0f, 0.25f), Quaternion.Euler(90.0f, 0.0f, 0.0f), new Color(1.0f, 0.0f, 1.0f, 0.3f), PlaneGizmo.PlaneType.XZ);
+            xzHandle = CreatePlaneHandle("XZ_Handle", new Vector3(PLANE_HANDLE_OFFSET, 0.0f, PLANE_HANDLE_OFFSET), Quaternion.Euler(90.0f, 0.0f, 0.0f), new Color(1.0f, 0.0f, 1.0f, 0.3f), PlaneGizmo.PlaneType.XZ, PLANE_HANDLE_SIZE);
         if (yzHandle == null)
-            yzHandle = CreatePlaneHandle("YZ_Handle", new Vector3(0.0f, 0.25f, 0.25f), Quaternion.Euler(0.0f, -90.0f, 0.0f), new Color(0.0f, 1.0f, 1.0f, 0.3f), PlaneGizmo.PlaneType.YZ);
+            yzHandle = CreatePlaneHandle("YZ_Handle", new Vector3(0.0f, PLANE_HANDLE_OFFSET, PLANE_HANDLE_OFFSET), Quaternion.Euler(0.0f, -90.0f, 0.0f), new Color(0.0f, 1.0f, 1.0f, 0.3f), PlaneGizmo.PlaneType.YZ, PLANE_HANDLE_SIZE);
 
         if (xRotHandle == null)
             xRotHandle = CreateRotateHandle("X_Rotate", Vector3.zero, Quaternion.Euler(0.0f, 0.0f, 90.0f), Color.red, RotateGizmo.Axis.X);
@@ -477,13 +487,13 @@ public class TransformGizmo : MonoBehaviour
         go.transform.SetParent(transform);
         go.transform.localPosition = localPos;
         go.transform.localRotation = localRot;
-        go.transform.localScale = new Vector3(0.1f, 0.5f, 0.1f);
+        go.transform.localScale = new Vector3(AXIS_HANDLE_SCALE, AXIS_HANDLE_LENGTH, AXIS_HANDLE_SCALE);
         var axisGizmo = go.AddComponent<AxisGizmo>();
-        axisGizmo.Initialize(axis, color, cam, 1.0f, 16.0f);
+        axisGizmo.Initialize(axis, color, cam, AXIS_HANDLE_THICKNESS, AXIS_HANDLE_THICKNESS);
         return axisGizmo;
     }
 
-    PlaneGizmo CreatePlaneHandle(string name, Vector3 localPos, Quaternion localRot, Color color, PlaneGizmo.PlaneType type)
+    PlaneGizmo CreatePlaneHandle(string name, Vector3 localPos, Quaternion localRot, Color color, PlaneGizmo.PlaneType type, float size)
     {
         GameObject go = GameObject.CreatePrimitive(PrimitiveType.Quad);
         go.name = name;
@@ -491,9 +501,9 @@ public class TransformGizmo : MonoBehaviour
         go.transform.SetParent(transform);
         go.transform.localPosition = localPos;
         go.transform.localRotation = localRot;
-        go.transform.localScale = Vector3.one * 0.25f * 1.5f;
+        go.transform.localScale = Vector3.one * size;
         var planeGizmo = go.AddComponent<PlaneGizmo>();
-        planeGizmo.Initialize(type, color, cam, 0.25f * 1.5f);
+        planeGizmo.Initialize(type, color, cam, size);
 
         // 產生反面，只加 MeshRenderer，不加 PlaneGizmo 與 Collider
         GameObject back = GameObject.CreatePrimitive(PrimitiveType.Quad);
@@ -526,12 +536,12 @@ public class TransformGizmo : MonoBehaviour
         go.transform.SetParent(transform);
         go.transform.localPosition = localPos;
         go.transform.localRotation = localRot;
-        go.transform.localScale = Vector3.one * 1.2f;
+        go.transform.localScale = Vector3.one * ROTATE_HANDLE_SCALE;
         var mf = go.AddComponent<MeshFilter>();
         var mr = go.AddComponent<MeshRenderer>();
         mf.mesh = TorusMeshGenerator.Generate(1.0f, 0.05f, 64, 12);
         var gizmo = go.AddComponent<RotateGizmo>();
-        gizmo.Initialize(axis, color, cam, 16.0f);
+        gizmo.Initialize(axis, color, cam, AXIS_HANDLE_THICKNESS);
         return gizmo;
     }
 

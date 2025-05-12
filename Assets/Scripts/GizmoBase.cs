@@ -10,6 +10,7 @@ using UnityEngine;
 public abstract class GizmoBase : MonoBehaviour
 {
     public Color baseColor;
+    [Tooltip("請在 Inspector 指定一個 Unlit/Color 或 Unlit/Texture 材質，避免 WebGL 找不到 Shader。")]
     public static Material sharedMaterial;
     protected MaterialPropertyBlock propertyBlock;
 
@@ -17,15 +18,8 @@ public abstract class GizmoBase : MonoBehaviour
     {
         if (sharedMaterial == null)
         {
-            sharedMaterial = new Material(Shader.Find("Unlit/Color"));
-            sharedMaterial.SetInt("_Cull", (int)UnityEngine.Rendering.CullMode.Off);
-            sharedMaterial.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
-            sharedMaterial.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
-            sharedMaterial.SetInt("_ZWrite", 0);
-            sharedMaterial.DisableKeyword("_ALPHATEST_ON");
-            sharedMaterial.EnableKeyword("_ALPHABLEND_ON");
-            sharedMaterial.DisableKeyword("_ALPHAPREMULTIPLY_ON");
-            sharedMaterial.renderQueue = 3000;
+            Debug.LogError("GizmoBase.sharedMaterial 尚未指定，請在 Inspector 指定一個 Unlit/Color 或 Unlit/Texture 材質，否則 WebGL 可能無法顯示 Gizmo！");
+            return;
         }
         if (propertyBlock == null)
             propertyBlock = new MaterialPropertyBlock();
@@ -48,15 +42,7 @@ public abstract class GizmoBase : MonoBehaviour
     {
         if (sharedMaterial == null)
         {
-            sharedMaterial = new Material(Shader.Find("Unlit/Color"));
-            sharedMaterial.SetInt("_Cull", (int)UnityEngine.Rendering.CullMode.Off);
-            sharedMaterial.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
-            sharedMaterial.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
-            sharedMaterial.SetInt("_ZWrite", 0);
-            sharedMaterial.DisableKeyword("_ALPHATEST_ON");
-            sharedMaterial.EnableKeyword("_ALPHABLEND_ON");
-            sharedMaterial.DisableKeyword("_ALPHAPREMULTIPLY_ON");
-            sharedMaterial.renderQueue = 3000;
+            Debug.LogError("GizmoBase.sharedMaterial 尚未指定，請在 Inspector 指定一個 Unlit/Color 或 Unlit/Texture 材質，否則 WebGL 可能無法顯示 Gizmo！");
         }
         return sharedMaterial;
     }
