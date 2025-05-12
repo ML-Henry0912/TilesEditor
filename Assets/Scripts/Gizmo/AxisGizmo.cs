@@ -2,8 +2,9 @@
 // 檔案名稱：AxisGizmo.cs
 // 1. 用於顯示與操作三軸（X, Y, Z）方向的 Gizmo。
 // 2. 讓使用者可以拖曳某一軸進行精確的物件操作。
-// 3. 使用 CapsuleCollider 進行滑鼠事件偵測，確保互動的準確性。
-// 4. 本元件為 TransformGizmo 的子物件，請勿手動移除或更改父子結構。
+// 3. 使用 CapsuleCollider 進行滑鼠事件偵測，提供直覺的互動體驗。
+// 4. 實作 ShouldBeActive 方法，根據 TransformGizmo 的設定決定是否顯示。
+// 5. 本元件為 TransformGizmo 的子物件，請勿手動移除或更改父子結構。
 // =============================================
 using UnityEngine;
 

@@ -6,8 +6,9 @@ namespace TilesEditor
     // 檔案名稱：GizmoBase.cs
     // 1. 作為所有 Gizmo 元件的基礎類別。
     // 2. 提供共用的顏色管理與材質設定功能。
-    // 3. 定義虛擬方法供子類別實作。
+    // 3. 定義虛擬方法供子類別實作，包含顯示條件判斷。
     // 4. 使用 MaterialPropertyBlock 來設定顏色，避免材質實例化。
+    // 5. 提供基礎的顏色重置功能。
     // =============================================
     public abstract class GizmoBase : MonoBehaviour
     {
