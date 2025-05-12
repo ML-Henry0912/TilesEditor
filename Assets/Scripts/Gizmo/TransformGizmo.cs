@@ -163,21 +163,21 @@ namespace TilesEditor
                 if (mr != null) mr.sharedMaterial = materials.hoverYellow;
                 hoverFound = true;
             }
-            else if (translateX && xHandle != null && xHandle.IsMouseOnGizmo(target.position, transform.right))
+            else if (translateX && xHandle != null && xHandle.IsHovered())
             {
                 xHandle.SetMaterialColor(Color.yellow);
                 var mr = xHandle.GetComponent<MeshRenderer>();
                 if (mr != null) mr.sharedMaterial = materials.hoverYellow;
                 hoverFound = true;
             }
-            else if (translateY && yHandle != null && yHandle.IsMouseOnGizmo(target.position, transform.up))
+            else if (translateY && yHandle != null && yHandle.IsHovered())
             {
                 yHandle.SetMaterialColor(Color.yellow);
                 var mr = yHandle.GetComponent<MeshRenderer>();
                 if (mr != null) mr.sharedMaterial = materials.hoverYellow;
                 hoverFound = true;
             }
-            else if (translateZ && zHandle != null && zHandle.IsMouseOnGizmo(target.position, transform.forward))
+            else if (translateZ && zHandle != null && zHandle.IsHovered())
             {
                 zHandle.SetMaterialColor(Color.yellow);
                 var mr = zHandle.GetComponent<MeshRenderer>();
@@ -250,7 +250,7 @@ namespace TilesEditor
                     return;
                 }
             }
-            else if (translateX && xHandle != null && xHandle.IsMouseOnGizmo(target.position, transform.right))
+            else if (translateX && xHandle != null && xHandle.IsHovered())
             {
                 activeAxis = xHandle;
                 action = DragAxis;
@@ -259,7 +259,7 @@ namespace TilesEditor
                 objectStartPos = target.position;
                 return;
             }
-            else if (translateY && yHandle != null && yHandle.IsMouseOnGizmo(target.position, transform.up))
+            else if (translateY && yHandle != null && yHandle.IsHovered())
             {
                 activeAxis = yHandle;
                 action = DragAxis;
@@ -268,7 +268,7 @@ namespace TilesEditor
                 objectStartPos = target.position;
                 return;
             }
-            else if (translateZ && zHandle != null && zHandle.IsMouseOnGizmo(target.position, transform.forward))
+            else if (translateZ && zHandle != null && zHandle.IsHovered())
             {
                 activeAxis = zHandle;
                 action = DragAxis;
@@ -452,6 +452,30 @@ namespace TilesEditor
             go.transform.localPosition = localPos;
             go.transform.localRotation = localRot;
             go.transform.localScale = new Vector3(AXIS_HANDLE_SCALE, AXIS_HANDLE_LENGTH, AXIS_HANDLE_SCALE);
+
+            // 設定 Collider 方向
+            var collider = go.GetComponent<CapsuleCollider>();
+            if (collider != null)
+            {
+                // 先設定基本尺寸
+                collider.radius = AXIS_HANDLE_SCALE * 0.5f;
+                collider.height = AXIS_HANDLE_LENGTH;
+                
+                // 根據軸向設定方向
+                switch (axis)
+                {
+                    case AxisGizmo.Axis.X:
+                        collider.direction = 0; // X軸方向
+                        break;
+                    case AxisGizmo.Axis.Y:
+                        collider.direction = 1; // Y軸方向
+                        break;
+                    case AxisGizmo.Axis.Z:
+                        collider.direction = 2; // Z軸方向
+                        break;
+                }
+            }
+
             var axisGizmo = go.AddComponent<AxisGizmo>();
             axisGizmo.Initialize(axis, color, this, AXIS_HANDLE_THICKNESS, AXIS_HANDLE_THICKNESS);
             // 指定材質

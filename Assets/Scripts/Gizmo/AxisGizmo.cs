@@ -4,7 +4,7 @@
 // 2. 讓使用者可以拖曳某一軸進行精確的物件操作。
 // 3. 本元件支援安全重複初始化，Initialize 可多次呼叫以覆蓋狀態，不會產生重複資源。
 // 4. 所有 Gizmo 材質由 ScriptableObject（GizmoMaterials）統一管理，於建立時指定，顏色與透明度（80%）以 MaterialPropertyBlock 設定，避免記憶體浪費與提升一致性。
-// 5. 所有互動偵測皆以數學計算為主，不依賴 Collider，確保精確度與效能。
+// 5. 使用 Collider 進行滑鼠事件偵測，確保互動的準確性。
 // 6. 本元件為 TransformGizmo 的子物件，請勿手動移除或更改父子結構。
 // =============================================
 using UnityEngine;
@@ -21,6 +21,7 @@ namespace TilesEditor
         Camera cam;
         float length;
         float thickness;
+        private bool isHovered = false;
 
         public void Initialize(Axis axisType, Color color, TransformGizmo gizmo, float length, float thickness)
         {
@@ -38,19 +39,40 @@ namespace TilesEditor
             this.cam = gizmo.cam;
             this.length = length;
             this.thickness = thickness;
+
+            // 確保有 Collider 元件
+            var collider = GetComponent<CapsuleCollider>();
+            if (collider == null)
+            {
+                collider = gameObject.AddComponent<CapsuleCollider>();
+            }
+
+            // 設定 Collider 屬性
+            // 考慮到 localScale 的影響，需要調整實際尺寸
+            float actualLength = length * transform.localScale.y;
+            float actualRadius = thickness * 0.5f * transform.localScale.x;
+
+            collider.radius = actualRadius;
+            collider.height = actualLength;
+            collider.direction = 2; // Z軸方向
+            collider.center = Vector3.zero;
         }
 
-        public bool IsMouseOnGizmo(Vector3 axisOrigin, Vector3 axisDir)
+        private void OnMouseEnter()
         {
-            Vector3 a = axisOrigin - axisDir * length * 0.5f;
-            Vector3 b = axisOrigin + axisDir * length * 0.5f;
-            Vector2 screenA = cam.WorldToScreenPoint(a);
-            Vector2 screenB = cam.WorldToScreenPoint(b);
-            Vector2 mouse = Input.mousePosition;
-            float t = Mathf.Clamp01(Vector2.Dot(mouse - screenA, screenB - screenA) / (screenB - screenA).sqrMagnitude);
-            Vector2 closest = screenA + t * (screenB - screenA);
-            float dist = (mouse - closest).magnitude;
-            return dist < thickness;
+            isHovered = true;
+            SetMaterialColor(Color.yellow);
+        }
+
+        private void OnMouseExit()
+        {
+            isHovered = false;
+            SetMaterialColor(baseColor);
+        }
+
+        public bool IsHovered()
+        {
+            return isHovered;
         }
 
         // 判斷此 handle 是否該顯示
