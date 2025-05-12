@@ -120,7 +120,8 @@ public class TransformGizmo : MonoBehaviour
     {
         if (Input.GetMouseButtonDown(0))
         {
-            TryBeginDrag();
+            CheckDrag();
+
 
         }
         else if (!TryHoverHandle())
@@ -205,8 +206,7 @@ public class TransformGizmo : MonoBehaviour
         return hoverFound;
     }
 
-    // 嘗試開始拖曳，根據 hover 的 handle 決定拖曳類型
-    bool TryBeginDrag()
+    void CheckDrag()
     {
         Vector3 center = target.position;
         if (rotateY && yRotHandle != null && yRotHandle.IsMouseOnGizmo(center, transform.up, RING_RADIUS))
@@ -219,7 +219,7 @@ public class TransformGizmo : MonoBehaviour
             {
                 rotateStartPoint = ray.GetPoint(enter);
                 objectStartRot = target.rotation;
-                return true;
+                return;
             }
         }
         else if (rotateX && xRotHandle != null && xRotHandle.IsMouseOnGizmo(center, transform.right, RING_RADIUS))
@@ -232,7 +232,7 @@ public class TransformGizmo : MonoBehaviour
             {
                 rotateStartPoint = ray.GetPoint(enter);
                 objectStartRot = target.rotation;
-                return true;
+                return;
             }
         }
         else if (rotateZ && zRotHandle != null && zRotHandle.IsMouseOnGizmo(center, transform.forward, RING_RADIUS))
@@ -245,7 +245,7 @@ public class TransformGizmo : MonoBehaviour
             {
                 rotateStartPoint = ray.GetPoint(enter);
                 objectStartRot = target.rotation;
-                return true;
+                return;
             }
         }
         else if (translateX && xHandle != null && xHandle.IsMouseOnGizmo(target.position, transform.right))
@@ -255,7 +255,7 @@ public class TransformGizmo : MonoBehaviour
             Vector3 axisDir = transform.TransformDirection(xHandle.WorldDirection).normalized;
             dragStartPos = GetClosestPointOnAxis(cam.ScreenPointToRay(Input.mousePosition), target.position, axisDir);
             objectStartPos = target.position;
-            return true;
+            return;
         }
         else if (translateY && yHandle != null && yHandle.IsMouseOnGizmo(target.position, transform.up))
         {
@@ -264,7 +264,7 @@ public class TransformGizmo : MonoBehaviour
             Vector3 axisDir = transform.TransformDirection(yHandle.WorldDirection).normalized;
             dragStartPos = GetClosestPointOnAxis(cam.ScreenPointToRay(Input.mousePosition), target.position, axisDir);
             objectStartPos = target.position;
-            return true;
+            return;
         }
         else if (translateZ && zHandle != null && zHandle.IsMouseOnGizmo(target.position, transform.forward))
         {
@@ -273,7 +273,7 @@ public class TransformGizmo : MonoBehaviour
             Vector3 axisDir = transform.TransformDirection(zHandle.WorldDirection).normalized;
             dragStartPos = GetClosestPointOnAxis(cam.ScreenPointToRay(Input.mousePosition), target.position, axisDir);
             objectStartPos = target.position;
-            return true;
+            return;
         }
         else if (translateX && translateY && xyHandle != null && xyHandle.IsMouseOnGizmo())
         {
@@ -285,11 +285,11 @@ public class TransformGizmo : MonoBehaviour
             {
                 dragPlane = new Plane(-dragPlane.normal, dragPlane.distance);
                 if (!dragPlane.Raycast(ray, out enter))
-                    return false;
+                    return;
             }
             dragStartPos = ray.GetPoint(enter);
             objectStartPos = target.position;
-            return true;
+            return;
         }
         else if (translateX && translateZ && xzHandle != null && xzHandle.IsMouseOnGizmo())
         {
@@ -301,11 +301,11 @@ public class TransformGizmo : MonoBehaviour
             {
                 dragPlane = new Plane(-dragPlane.normal, dragPlane.distance);
                 if (!dragPlane.Raycast(ray, out enter))
-                    return false;
+                    return;
             }
             dragStartPos = ray.GetPoint(enter);
             objectStartPos = target.position;
-            return true;
+            return;
         }
         else if (translateY && translateZ && yzHandle != null && yzHandle.IsMouseOnGizmo())
         {
@@ -317,13 +317,13 @@ public class TransformGizmo : MonoBehaviour
             {
                 dragPlane = new Plane(-dragPlane.normal, dragPlane.distance);
                 if (!dragPlane.Raycast(ray, out enter))
-                    return false;
+                    return;
             }
             dragStartPos = ray.GetPoint(enter);
             objectStartPos = target.position;
-            return true;
+            return;
         }
-        return false;
+
     }
 
     // 拖曳軸
