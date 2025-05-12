@@ -19,7 +19,6 @@ namespace TilesEditor
         // === 常數定義 ===
         const float AXIS_HANDLE_OFFSET = 0.75f;
         const float PLANE_HANDLE_OFFSET = 0.55f;
-        //const float PLANE_HANDLE_SIZE = 0.5f * 1.5f;
         const float PLANE_HANDLE_SIZE = 0.5f;
         const float ROTATE_HANDLE_SCALE = 1.2f;
         const float AXIS_HANDLE_SCALE = 0.1f;
