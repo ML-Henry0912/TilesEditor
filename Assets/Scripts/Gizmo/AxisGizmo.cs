@@ -9,58 +9,61 @@
 // =============================================
 using UnityEngine;
 
-public class AxisGizmo : GizmoBase
+namespace TilesEditor
 {
-    public enum Axis { X, Y, Z }
-    public Axis axis;
-
-    [HideInInspector] public Vector3 WorldDirection;
-
-    Camera cam;
-    float length;
-    float thickness;
-
-    public void Initialize(Axis axisType, Color color, TransformGizmo gizmo, float length, float thickness)
+    public class AxisGizmo : GizmoBase
     {
-        axis = axisType;
-        baseColor = color;
-        SetMaterialColor(color);
+        public enum Axis { X, Y, Z }
+        public Axis axis;
 
-        switch (axis)
+        [HideInInspector] public Vector3 WorldDirection;
+
+        Camera cam;
+        float length;
+        float thickness;
+
+        public void Initialize(Axis axisType, Color color, TransformGizmo gizmo, float length, float thickness)
         {
-            case Axis.X: WorldDirection = Vector3.right; break;
-            case Axis.Y: WorldDirection = Vector3.up; break;
-            case Axis.Z: WorldDirection = Vector3.forward; break;
+            axis = axisType;
+            baseColor = color;
+            SetMaterialColor(color);
+
+            switch (axis)
+            {
+                case Axis.X: WorldDirection = Vector3.right; break;
+                case Axis.Y: WorldDirection = Vector3.up; break;
+                case Axis.Z: WorldDirection = Vector3.forward; break;
+            }
+            this.gizmo = gizmo;
+            this.cam = gizmo.cam;
+            this.length = length;
+            this.thickness = thickness;
         }
-        this.gizmo = gizmo;
-        this.cam = gizmo.cam;
-        this.length = length;
-        this.thickness = thickness;
-    }
 
-    public bool IsMouseOnGizmo(Vector3 axisOrigin, Vector3 axisDir)
-    {
-        Vector3 a = axisOrigin - axisDir * length * 0.5f;
-        Vector3 b = axisOrigin + axisDir * length * 0.5f;
-        Vector2 screenA = cam.WorldToScreenPoint(a);
-        Vector2 screenB = cam.WorldToScreenPoint(b);
-        Vector2 mouse = Input.mousePosition;
-        float t = Mathf.Clamp01(Vector2.Dot(mouse - screenA, screenB - screenA) / (screenB - screenA).sqrMagnitude);
-        Vector2 closest = screenA + t * (screenB - screenA);
-        float dist = (mouse - closest).magnitude;
-        return dist < thickness;
-    }
-
-    // 判斷此 handle 是否該顯示
-    public override bool ShouldBeVisible()
-    {
-        if (gizmo == null) return false;
-        switch (axis)
+        public bool IsMouseOnGizmo(Vector3 axisOrigin, Vector3 axisDir)
         {
-            case Axis.X: return gizmo.translateX;
-            case Axis.Y: return gizmo.translateY;
-            case Axis.Z: return gizmo.translateZ;
-            default: return false;
+            Vector3 a = axisOrigin - axisDir * length * 0.5f;
+            Vector3 b = axisOrigin + axisDir * length * 0.5f;
+            Vector2 screenA = cam.WorldToScreenPoint(a);
+            Vector2 screenB = cam.WorldToScreenPoint(b);
+            Vector2 mouse = Input.mousePosition;
+            float t = Mathf.Clamp01(Vector2.Dot(mouse - screenA, screenB - screenA) / (screenB - screenA).sqrMagnitude);
+            Vector2 closest = screenA + t * (screenB - screenA);
+            float dist = (mouse - closest).magnitude;
+            return dist < thickness;
+        }
+
+        // 判斷此 handle 是否該顯示
+        public override bool ShouldBeVisible()
+        {
+            if (gizmo == null) return false;
+            switch (axis)
+            {
+                case Axis.X: return gizmo.translateX;
+                case Axis.Y: return gizmo.translateY;
+                case Axis.Z: return gizmo.translateZ;
+                default: return false;
+            }
         }
     }
 }

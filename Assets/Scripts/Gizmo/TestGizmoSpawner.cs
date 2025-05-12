@@ -4,41 +4,45 @@
 // 2. 方便開發與測試 Gizmo 功能。
 // =============================================
 using UnityEngine;
+using TilesEditor;
 
-public class TestGizmoSpawner : MonoBehaviour
+namespace TilesEditor
 {
-    public Camera cam;
-    public Transform target;
-    public GizmoMaterials materials;
-
-    GameObject spawnedObj;
-    TransformGizmo gizmo;
-
-    void OnGUI()
+    public class TestGizmoSpawner : MonoBehaviour
     {
-        float w = Screen.width * 0.4f;
-        float h = Screen.height * 0.12f;
-        float x = (Screen.width - w) / 2f;
-        float y = Screen.height * 0.1f;
-        GUIStyle style = new GUIStyle(GUI.skin.button);
-        style.fontSize = (int)(h * 0.4f);
-        style.normal.textColor = Color.white;
-        style.fontStyle = FontStyle.Bold;
+        public Camera cam;
+        public Transform target;
+        public GizmoMaterials materials;
 
-        if (spawnedObj == null)
+        GameObject spawnedObj;
+        TransformGizmo gizmo;
+
+        void OnGUI()
         {
-            if (GUI.Button(new Rect(x, y, w, h), "產生帶 Gizmo 的 Cube", style))
+            float w = Screen.width * 0.4f;
+            float h = Screen.height * 0.12f;
+            float x = (Screen.width - w) / 2f;
+            float y = Screen.height * 0.1f;
+            GUIStyle style = new GUIStyle(GUI.skin.button);
+            style.fontSize = (int)(h * 0.4f);
+            style.normal.textColor = Color.white;
+            style.fontStyle = FontStyle.Bold;
+
+            if (spawnedObj == null)
             {
-                spawnedObj = new GameObject();
-                spawnedObj.transform.position = Vector3.zero;
-                spawnedObj.transform.localScale = Vector3.one;
-                gizmo = spawnedObj.AddComponent<TransformGizmo>();
-                gizmo.Initialize(target, cam, materials);
+                if (GUI.Button(new Rect(x, y, w, h), "產生帶 Gizmo 的 Cube", style))
+                {
+                    spawnedObj = new GameObject();
+                    spawnedObj.transform.position = Vector3.zero;
+                    spawnedObj.transform.localScale = Vector3.one;
+                    gizmo = spawnedObj.AddComponent<TransformGizmo>();
+                    gizmo.Initialize(target, cam, materials);
+                }
             }
-        }
-        else
-        {
-            GUI.Label(new Rect(x, y, w, h), "已產生 Cube 並加上 TransformGizmo", style);
+            else
+            {
+                GUI.Label(new Rect(x, y, w, h), "已產生 Cube 並加上 TransformGizmo", style);
+            }
         }
     }
 }
