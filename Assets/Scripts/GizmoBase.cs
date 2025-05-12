@@ -7,7 +7,6 @@ using UnityEngine;
 //          本元件支援安全重複初始化，Initialize 可多次呼叫以覆蓋狀態，不會產生重複資源。
 //          所有 Gizmo 共用同一份靜態材質，顏色與透明度（80%）以 MaterialPropertyBlock 設定，避免記憶體浪費。
 // =============================================
-// [RequireComponent(typeof(Collider))]
 public abstract class GizmoBase : MonoBehaviour
 {
     public Color baseColor;
