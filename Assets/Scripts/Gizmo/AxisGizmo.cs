@@ -18,9 +18,6 @@ namespace TilesEditor
 
         [HideInInspector] public Vector3 WorldDirection;
 
-        Camera cam;
-        float length;
-        float thickness;
         private bool isHovered = false;
 
         public void Initialize(Axis axisType, Color color, TransformGizmo gizmo, float length, float thickness)
@@ -36,9 +33,6 @@ namespace TilesEditor
                 case Axis.Z: WorldDirection = Vector3.forward; break;
             }
             this.gizmo = gizmo;
-            this.cam = gizmo.cam;
-            this.length = length;
-            this.thickness = thickness;
 
             // 確保有 Collider 元件
             var collider = GetComponent<CapsuleCollider>();
