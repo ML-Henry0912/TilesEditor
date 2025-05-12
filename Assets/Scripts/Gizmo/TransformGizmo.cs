@@ -102,17 +102,17 @@ namespace TilesEditor
             transform.position = target.position;
             transform.rotation = target.rotation;
 
-            UpdateHandleVisibility();
+            UpdateHandleActive();
 
             action?.Invoke();
         }
 
-        void UpdateHandleVisibility()
+        void UpdateHandleActive()
         {
             for (int _i = 0; _i < allGizmos.Length; _i++)
             {
                 GizmoBase gizmo = allGizmos[_i];
-                gizmo?.gameObject?.SetActive(gizmo?.ShouldBeVisible() ?? false);
+                gizmo?.gameObject?.SetActive(gizmo?.ShouldBeActive() ?? false);
             }
         }
 

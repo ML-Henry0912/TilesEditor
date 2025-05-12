@@ -62,7 +62,7 @@ namespace TilesEditor
         }
 
         // 判斷此 handle 是否該顯示
-        public override bool ShouldBeVisible()
+        public override bool ShouldBeActive()
         {
             if (gizmo == null) return false;
             switch (axis)

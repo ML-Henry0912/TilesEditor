@@ -34,7 +34,7 @@ namespace TilesEditor
         }
 
         // 可覆寫的顯示條件，預設為 true
-        public virtual bool ShouldBeVisible()
+        public virtual bool ShouldBeActive()
         {
             return true;
         }

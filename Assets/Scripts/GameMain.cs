@@ -27,6 +27,11 @@ namespace TilesEditor
             uiManager?.Initialize();
 
             Main = this;
+
+            gizmo = gizmoRoot.AddComponent<TileGizmo>();
+            gizmo.InitializeTile(transform, cam, materials);
+
+
             // 將所有 tiles 設定隨機位置，z軸為0
             foreach (var tile in tiles)
             {
@@ -60,10 +65,6 @@ namespace TilesEditor
                     {
                         target = hit.collider.transform;
                         // 初始化 gizmo 讓使用者編輯該物件
-                        if (gizmo == null)
-                        {
-                            gizmo = gizmoRoot.AddComponent<TileGizmo>();
-                        }
                         gizmo.InitializeTile(target, cam, materials);
                         // 關閉 rotation X, Y 與 translate Z
                         //gizmo.rotateX = false;
