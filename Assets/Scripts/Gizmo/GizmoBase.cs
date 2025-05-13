@@ -38,7 +38,7 @@ namespace TilesEditor
 
         public bool IsHovered()
         {
-            return isHovered;
+            return isHovered && ((iGizmo)this).ShouldBeActive();
         }
 
         public void SetMaterialColor(Color color)

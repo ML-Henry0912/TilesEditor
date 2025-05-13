@@ -118,7 +118,7 @@ namespace TilesEditor
             {
                 foreach (var gizmo in allGizmos)
                 {
-                    if (gizmo != null && gizmo.ShouldBeActive() && gizmo.IsHovered())
+                    if (gizmo != null && gizmo.IsHovered())
                     {
                         activeGizmo = gizmo;
                         if (gizmo is RotateGizmo rotateGizmo)
@@ -197,10 +197,8 @@ namespace TilesEditor
                 if (hoverFound)
                     continue;
 
-                if (gizmo != null && gizmo.ShouldBeActive() && gizmo.IsHovered())
+                if (gizmo != null && gizmo.IsHovered())
                 {
-                    var mr = (gizmo as MonoBehaviour)?.GetComponent<MeshRenderer>();
-                    if (mr != null) mr.sharedMaterial = materials.materials[GIZMO_HOVER];
                     hoverFound = true;
                 }
             }
@@ -212,7 +210,7 @@ namespace TilesEditor
             Vector3 center = target.position;
             foreach (var gizmo in allGizmos)
             {
-                if (gizmo == null || !gizmo.ShouldBeActive() || !gizmo.IsHovered())
+                if (gizmo == null || !gizmo.IsHovered())
                     continue;
 
                 activeGizmo = gizmo;
