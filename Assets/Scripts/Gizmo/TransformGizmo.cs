@@ -33,18 +33,6 @@ namespace TilesEditor
 
         public GizmoMaterials materials;
 
-        public Vector3 dragStartPos, objectStartPos;
-        [Header("Active Gizmo")]
-        public iGizmo activeGizmo;
-        [Header("Active Gizmos")]
-        [SerializeField] private AxisGizmo axisGizmo;
-        [SerializeField] private PlaneGizmo planeGizmo;
-        [SerializeField] private RotateGizmo rotateGizmo;
-
-        public Vector3 rotateStartPoint;
-        public Quaternion objectStartRot;
-        public Plane rotationPlane;
-
         public Action action;
 
         bool initialized = false;
@@ -84,7 +72,7 @@ namespace TilesEditor
 
             initialized = true;
             isHidden = false;
-            action = CheckHover;
+            action = CheckHoverGizmo;
         }
 
         public void HideAllGizmos()
@@ -110,55 +98,22 @@ namespace TilesEditor
             action?.Invoke();
         }
 
-
-        // 狀態：Idle，檢查是否 hover 到 handle
-        void CheckHover()
+        void CheckHoverGizmo()
         {
-            if (TryHoverHandle())
-            {
-                //action = CheckMouseDown;
-            }
-        }
-
-        // 狀態：Hover，檢查是否按下滑鼠進入拖曳
-        void CheckMouseDown()
-        {
-
-        }
-
-        // 嘗試 hover 到 handle，並處理 hover 效果
-        bool TryHoverHandle()
-        {
-            bool hoverFound = false;
-            activeGizmo = null;
             foreach (var gizmo in allGizmos)
             {
-                if (hoverFound)
-                    continue;
-
                 if (gizmo != null && gizmo.IsHovered())
                 {
                     action = gizmo.OnHover;
-
-                    activeGizmo = gizmo;
-                    hoverFound = true;
+                    break;
                 }
             }
-            return hoverFound;
+
         }
-
-
-        // 拖曳平面
 
         public void EndDrag()
         {
-            activeGizmo?.ResetColor();
-            activeGizmo = null;
-            axisGizmo = null;
-            planeGizmo = null;
-            rotateGizmo = null;
-
-            action = CheckHover;
+            action = CheckHoverGizmo;
         }
 
 

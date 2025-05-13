@@ -32,6 +32,7 @@ namespace TilesEditor
         {
             if (Input.GetMouseButtonUp(0))
             {
+                ResetColor();
                 gizmoRoot.EndDrag();
                 return;
             }
@@ -76,6 +77,7 @@ namespace TilesEditor
             }
             else if (!IsHovered())
             {
+                ResetColor();
                 gizmoRoot.EndDrag();
             }
         }
