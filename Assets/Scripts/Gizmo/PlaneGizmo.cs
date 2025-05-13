@@ -80,7 +80,7 @@ namespace TilesEditor
             SetMaterialColor(baseColor);
         }
 
-        public bool IsMouseOnGizmo()
+        public bool IsHovered()
         {
             return isHovered;
         }

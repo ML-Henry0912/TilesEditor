@@ -16,5 +16,7 @@ namespace TilesEditor
         void SetMaterialColor(Color color);
         void ResetColor();
         bool ShouldBeActive();
+        bool IsHovered();
+
     }
 }

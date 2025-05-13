@@ -25,7 +25,6 @@ namespace TilesEditor
         const float AXIS_HANDLE_SCALE = 0.1f;
         const float AXIS_HANDLE_LENGTH = 0.6f;
         const float AXIS_HANDLE_THICKNESS = 16.0f;
-        const float RING_RADIUS = 1.2f;
 
         public Transform target;
         public Camera cam;
@@ -55,9 +54,7 @@ namespace TilesEditor
 
         Vector3 dragStartPos, objectStartPos;
         [Header("Active Gizmos")]
-        [SerializeField] private AxisGizmo activeAxis;
-        [SerializeField] private PlaneGizmo activePlane;
-        [SerializeField] private RotateGizmo activeRotate;
+        [SerializeField] private iGizmo activeGizmo;
 
         Vector3 rotateStartPoint;
         Quaternion objectStartRot;
@@ -132,15 +129,14 @@ namespace TilesEditor
             switch (type)
             {
                 case PlaneType.XY:
-                    activePlane = xyHandle; break;
+                    activeGizmo = xyHandle; break;
                 case PlaneType.XZ:
-                    activePlane = xzHandle; break;
+                    activeGizmo = xzHandle; break;
                 case PlaneType.YZ:
-                    activePlane = yzHandle; break;
+                    activeGizmo = yzHandle; break;
                 default:
-                    activePlane = null; break;
+                    activeGizmo = null; break;
             }
-
         }
 
         // 狀態：Hover，檢查是否按下滑鼠進入拖曳
@@ -166,21 +162,21 @@ namespace TilesEditor
 
             Vector3 center = target.position;
             bool hoverFound = false;
-            if (rotateY && yRotHandle != null && yRotHandle.IsMouseOnGizmo(center, transform.up, RING_RADIUS))
+            if (rotateY && yRotHandle != null && yRotHandle.IsHovered())
             {
                 yRotHandle.SetMaterialColor(Color.yellow);
                 var mr = yRotHandle.GetComponent<MeshRenderer>();
                 if (mr != null) mr.sharedMaterial = materials.hoverYellow;
                 hoverFound = true;
             }
-            else if (rotateX && xRotHandle != null && xRotHandle.IsMouseOnGizmo(center, transform.right, RING_RADIUS))
+            else if (rotateX && xRotHandle != null && xRotHandle.IsHovered())
             {
                 xRotHandle.SetMaterialColor(Color.yellow);
                 var mr = xRotHandle.GetComponent<MeshRenderer>();
                 if (mr != null) mr.sharedMaterial = materials.hoverYellow;
                 hoverFound = true;
             }
-            else if (rotateZ && zRotHandle != null && zRotHandle.IsMouseOnGizmo(center, transform.forward, RING_RADIUS))
+            else if (rotateZ && zRotHandle != null && zRotHandle.IsHovered())
             {
                 zRotHandle.SetMaterialColor(Color.yellow);
                 var mr = zRotHandle.GetComponent<MeshRenderer>();
@@ -208,21 +204,21 @@ namespace TilesEditor
                 if (mr != null) mr.sharedMaterial = materials.hoverYellow;
                 hoverFound = true;
             }
-            else if (translateX && translateY && xyHandle != null && xyHandle.IsMouseOnGizmo())
+            else if (translateX && translateY && xyHandle != null && xyHandle.IsHovered())
             {
                 xyHandle.SetMaterialColor(Color.yellow);
                 var mr = xyHandle.GetComponent<MeshRenderer>();
                 if (mr != null) mr.sharedMaterial = materials.hoverYellow;
                 hoverFound = true;
             }
-            else if (translateX && translateZ && xzHandle != null && xzHandle.IsMouseOnGizmo())
+            else if (translateX && translateZ && xzHandle != null && xzHandle.IsHovered())
             {
                 xzHandle.SetMaterialColor(Color.yellow);
                 var mr = xzHandle.GetComponent<MeshRenderer>();
                 if (mr != null) mr.sharedMaterial = materials.hoverYellow;
                 hoverFound = true;
             }
-            else if (translateY && translateZ && yzHandle != null && yzHandle.IsMouseOnGizmo())
+            else if (translateY && translateZ && yzHandle != null && yzHandle.IsHovered())
             {
                 yzHandle.SetMaterialColor(Color.yellow);
                 var mr = yzHandle.GetComponent<MeshRenderer>();
@@ -235,9 +231,9 @@ namespace TilesEditor
         void CheckDrag()
         {
             Vector3 center = target.position;
-            if (rotateY && yRotHandle != null && yRotHandle.IsMouseOnGizmo(center, transform.up, RING_RADIUS))
+            if (rotateY && yRotHandle != null && yRotHandle.IsHovered())
             {
-                activeRotate = yRotHandle;
+                activeGizmo = yRotHandle;
                 action = OnDragRotate;
                 rotationPlane = new Plane(transform.up, center);
                 Ray ray = cam.ScreenPointToRay(Input.mousePosition);
@@ -248,9 +244,9 @@ namespace TilesEditor
                     return;
                 }
             }
-            else if (rotateX && xRotHandle != null && xRotHandle.IsMouseOnGizmo(center, transform.right, RING_RADIUS))
+            else if (rotateX && xRotHandle != null && xRotHandle.IsHovered())
             {
-                activeRotate = xRotHandle;
+                activeGizmo = xRotHandle;
                 action = OnDragRotate;
                 rotationPlane = new Plane(transform.right, center);
                 Ray ray = cam.ScreenPointToRay(Input.mousePosition);
@@ -261,9 +257,9 @@ namespace TilesEditor
                     return;
                 }
             }
-            else if (rotateZ && zRotHandle != null && zRotHandle.IsMouseOnGizmo(center, transform.forward, RING_RADIUS))
+            else if (rotateZ && zRotHandle != null && zRotHandle.IsHovered())
             {
-                activeRotate = zRotHandle;
+                activeGizmo = zRotHandle;
                 action = OnDragRotate;
                 rotationPlane = new Plane(transform.forward, center);
                 Ray ray = cam.ScreenPointToRay(Input.mousePosition);
@@ -276,7 +272,7 @@ namespace TilesEditor
             }
             else if (translateX && xHandle != null && xHandle.IsHovered())
             {
-                activeAxis = xHandle;
+                activeGizmo = xHandle;
                 action = OnDragAxis;
                 Vector3 axisDir = transform.TransformDirection(xHandle.WorldDirection).normalized;
                 dragStartPos = GetClosestPointOnAxis(cam.ScreenPointToRay(Input.mousePosition), target.position, axisDir);
@@ -285,7 +281,7 @@ namespace TilesEditor
             }
             else if (translateY && yHandle != null && yHandle.IsHovered())
             {
-                activeAxis = yHandle;
+                activeGizmo = yHandle;
                 action = OnDragAxis;
                 Vector3 axisDir = transform.TransformDirection(yHandle.WorldDirection).normalized;
                 dragStartPos = GetClosestPointOnAxis(cam.ScreenPointToRay(Input.mousePosition), target.position, axisDir);
@@ -294,16 +290,16 @@ namespace TilesEditor
             }
             else if (translateZ && zHandle != null && zHandle.IsHovered())
             {
-                activeAxis = zHandle;
+                activeGizmo = zHandle;
                 action = OnDragAxis;
                 Vector3 axisDir = transform.TransformDirection(zHandle.WorldDirection).normalized;
                 dragStartPos = GetClosestPointOnAxis(cam.ScreenPointToRay(Input.mousePosition), target.position, axisDir);
                 objectStartPos = target.position;
                 return;
             }
-            else if (translateX && translateY && xyHandle != null && xyHandle.IsMouseOnGizmo())
+            else if (translateX && translateY && xyHandle != null && xyHandle.IsHovered())
             {
-                activePlane = xyHandle;
+                activeGizmo = xyHandle;
                 action = OnDragPlane;
                 Plane dragPlane = xyHandle.GetDragPlane(transform, target.position);
                 Ray ray = cam.ScreenPointToRay(Input.mousePosition);
@@ -317,9 +313,9 @@ namespace TilesEditor
                 objectStartPos = target.position;
                 return;
             }
-            else if (translateX && translateZ && xzHandle != null && xzHandle.IsMouseOnGizmo())
+            else if (translateX && translateZ && xzHandle != null && xzHandle.IsHovered())
             {
-                activePlane = xzHandle;
+                activeGizmo = xzHandle;
                 action = OnDragPlane;
                 Plane dragPlane = xzHandle.GetDragPlane(transform, target.position);
                 Ray ray = cam.ScreenPointToRay(Input.mousePosition);
@@ -333,9 +329,9 @@ namespace TilesEditor
                 objectStartPos = target.position;
                 return;
             }
-            else if (translateY && translateZ && yzHandle != null && yzHandle.IsMouseOnGizmo())
+            else if (translateY && translateZ && yzHandle != null && yzHandle.IsHovered())
             {
-                activePlane = yzHandle;
+                activeGizmo = yzHandle;
                 action = OnDragPlane;
                 Plane dragPlane = yzHandle.GetDragPlane(transform, target.position);
                 Ray ray = cam.ScreenPointToRay(Input.mousePosition);
@@ -349,7 +345,6 @@ namespace TilesEditor
                 objectStartPos = target.position;
                 return;
             }
-
         }
 
         // 拖曳軸
@@ -362,7 +357,7 @@ namespace TilesEditor
             }
 
             Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-            Vector3 axisDir = transform.TransformDirection(activeAxis.WorldDirection).normalized;
+            Vector3 axisDir = transform.TransformDirection(((AxisGizmo)activeGizmo).WorldDirection).normalized;
             Vector3 current = GetClosestPointOnAxis(ray, objectStartPos, axisDir);
             Vector3 delta = Vector3.Project(current - dragStartPos, axisDir);
             if (delta.magnitude < 100f)
@@ -378,11 +373,11 @@ namespace TilesEditor
                 return;
             }
 
-            if (activePlane == null)
+            if (activeGizmo == null)
                 return;
 
             Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-            Plane dragPlane = activePlane.GetDragPlane(transform, target.position);
+            Plane dragPlane = ((PlaneGizmo)activeGizmo).GetDragPlane(transform, target.position);
             if (dragPlane.Raycast(ray, out float enter))
             {
                 Vector3 currentPoint = ray.GetPoint(enter);
@@ -411,22 +406,17 @@ namespace TilesEditor
                 Quaternion deltaRotation = Quaternion.FromToRotation(startDir, currentDir);
                 deltaRotation.ToAngleAxis(out float angle, out Vector3 axis);
 
-                if (Vector3.Dot(axis, activeRotate.WorldAxis) < 0f)
+                if (Vector3.Dot(axis, ((RotateGizmo)activeGizmo).WorldAxis) < 0f)
                     angle = -angle;
 
-                target.rotation = objectStartRot * Quaternion.AngleAxis(angle, activeRotate.WorldAxis);
+                target.rotation = objectStartRot * Quaternion.AngleAxis(angle, ((RotateGizmo)activeGizmo).WorldAxis);
             }
         }
 
         void EndDrag()
         {
-            activeAxis?.ResetColor();
-            activePlane?.ResetColor();
-            activeRotate?.ResetColor();
-
-            activeAxis = null;
-            activePlane = null;
-            activeRotate = null;
+            activeGizmo?.ResetColor();
+            activeGizmo = null;
             action = CheckHover;
         }
 
@@ -466,8 +456,6 @@ namespace TilesEditor
             xRotHandle = CreateRotateHandle("X_Rotate", Vector3.zero, Quaternion.Euler(0.0f, 0.0f, 90.0f), Color.red, RotateGizmo.Axis.X);
             yRotHandle = CreateRotateHandle("Y_Rotate", Vector3.zero, Quaternion.identity, Color.green, RotateGizmo.Axis.Y);
             zRotHandle = CreateRotateHandle("Z_Rotate", Vector3.zero, Quaternion.Euler(90.0f, 0.0f, 0.0f), Color.blue, RotateGizmo.Axis.Z);
-
-
         }
 
         AxisGizmo CreateAxisHandle(string name, Vector3 localPos, Quaternion localRot, Color color, AxisGizmo.Axis axis)
@@ -636,9 +624,6 @@ namespace TilesEditor
                     yzHandle.SetInvisible(true);
                     break;
             }
-
-
         }
-
     }
 }

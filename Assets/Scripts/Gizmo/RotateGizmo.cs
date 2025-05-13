@@ -11,6 +11,8 @@ namespace TilesEditor
 {
     public class RotateGizmo : MonoBehaviour, iGizmo
     {
+        const float RING_RADIUS = 1.2f;
+
         public enum Axis { X, Y, Z }
         public Axis axis;
 
@@ -65,9 +67,18 @@ namespace TilesEditor
         /// <param name="circleNormal">圓面法向量（世界座標）</param>
         /// <param name="radius">圓半徑</param>
         /// <returns>滑鼠是否在橢圓環上</returns>
-        public bool IsMouseOnGizmo(Vector3 circleCenter, Vector3 circleNormal, float radius)
+        public bool IsHovered()
         {
-            var ellipse = EllipseProjectionUtility.ProjectCircleToScreen(cam, circleCenter, circleNormal, radius);
+            Vector3 circleNormal;
+            switch (axis)
+            {
+                case Axis.X: circleNormal = gizmo.transform.right; break;
+                case Axis.Y: circleNormal = gizmo.transform.up; break;
+                case Axis.Z: circleNormal = gizmo.transform.forward; break;
+                default: circleNormal = gizmo.transform.forward; break;
+
+            }
+            var ellipse = EllipseProjectionUtility.ProjectCircleToScreen(cam, gizmo.target.position, circleNormal, RING_RADIUS);
             Vector2 mousePos = Input.mousePosition;
             Vector2 delta = mousePos - ellipse.screenCenter;
             Vector2 majorDir = ellipse.majorAxisDirection.normalized;
