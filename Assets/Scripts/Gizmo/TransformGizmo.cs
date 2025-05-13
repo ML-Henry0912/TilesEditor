@@ -195,7 +195,7 @@ namespace TilesEditor
             return rotateGizmo;
         }
 
-        public static class TorusMeshGenerator
+        static class TorusMeshGenerator
         {
             public static Mesh Generate(float ringRadius = 1f, float tubeRadius = 0.05f, int segments = 32, int sides = 3)
             {

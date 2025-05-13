@@ -62,7 +62,6 @@ namespace TilesEditor
             }
             else
             {
-                isdragging = false;
                 ResetColor();
                 gizmoRoot.EndDrag();
 
@@ -74,7 +73,6 @@ namespace TilesEditor
         {
             if (Input.GetMouseButton(0))
             {
-                isdragging = true;
                 gizmoRoot.action = OnDrag;
                 rotationPlane = new Plane(WorldAxis, target.position);
                 Ray ray = cam.ScreenPointToRay(Input.mousePosition);

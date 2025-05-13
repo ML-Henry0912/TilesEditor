@@ -15,8 +15,6 @@ namespace TilesEditor
         protected MaterialPropertyBlock propertyBlock;
         protected Camera cam;
 
-        protected bool isdragging = false;
-
         private void OnMouseEnter()
         {
             isHovered = true;
@@ -25,7 +23,7 @@ namespace TilesEditor
         private void OnMouseExit()
         {
             isHovered = false;
-            if (!isdragging)
+            if (gizmoRoot.action != ((iGizmo)this).OnDrag)
                 SetMaterialColor(baseColor);
         }
 
