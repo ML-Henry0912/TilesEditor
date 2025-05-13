@@ -124,7 +124,7 @@ namespace TilesEditor
         {
             if (Input.GetMouseButtonDown(0))
             {
-                CheckDrag();
+                action = CheckDrag;
             }
             else if (!TryHoverHandle())
             {
@@ -269,6 +269,7 @@ namespace TilesEditor
             activeGizmo = null;
             action = CheckHover;
         }
+
 
         public Vector3 GetClosestPointOnAxis(Ray ray, Vector3 axisOrigin, Vector3 axisDir)
         {
