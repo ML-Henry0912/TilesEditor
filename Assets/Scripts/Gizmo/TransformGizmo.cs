@@ -114,55 +114,7 @@ namespace TilesEditor
             transform.position = target.position;
             transform.rotation = target.rotation;
 
-            if (Input.GetMouseButtonDown(0))
-            {
-                foreach (var gizmo in allGizmos)
-                {
-                    if (gizmo != null && gizmo.IsHovered())
-                    {
-                        activeGizmo = gizmo;
-                        if (gizmo is RotateGizmo rotateGizmo)
-                        {
-                            rotationPlane = new Plane(rotateGizmo.WorldAxis, target.position);
-                            Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-                            if (rotationPlane.Raycast(ray, out float enter))
-                            {
-                                rotateStartPoint = ray.GetPoint(enter);
-                                objectStartRot = target.rotation;
-                            }
-                        }
-                        else if (gizmo is AxisGizmo axisGizmo)
-                        {
-                            Vector3 axisDir = transform.TransformDirection(axisGizmo.WorldDirection).normalized;
-                            dragStartPos = GetClosestPointOnAxis(cam.ScreenPointToRay(Input.mousePosition), target.position, axisDir);
-                            objectStartPos = target.position;
-                        }
-                        else if (gizmo is PlaneGizmo planeGizmo)
-                        {
-                            Plane dragPlane = planeGizmo.GetDragPlane(transform, target.position);
-                            Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-                            if (dragPlane.Raycast(ray, out float enter))
-                            {
-                                dragStartPos = ray.GetPoint(enter);
-                                objectStartPos = target.position;
-                            }
-                        }
-                        break;
-                    }
-                }
-            }
-            else if (Input.GetMouseButtonUp(0))
-            {
-                if (activeGizmo != null)
-                {
-                    activeGizmo.ResetColor();
-                    activeGizmo = null;
-                }
-            }
-            else if (Input.GetMouseButton(0) && activeGizmo != null)
-            {
-                activeGizmo.OnDrag();
-            }
+            action?.Invoke();
         }
 
         // 狀態：Idle，檢查是否 hover 到 handle

@@ -18,13 +18,13 @@ namespace TilesEditor
         private void OnMouseEnter()
         {
             isHovered = true;
-            SetMaterialColor(Color.yellow);
+            //SetMaterialColor(Color.yellow);
         }
 
         private void OnMouseExit()
         {
             isHovered = false;
-            SetMaterialColor(baseColor);
+            //SetMaterialColor(baseColor);
         }
 
         public void SetInvisible(bool value)
@@ -38,7 +38,16 @@ namespace TilesEditor
 
         public bool IsHovered()
         {
-            return isHovered && ((iGizmo)this).ShouldBeActive();
+            if (isHovered && ((iGizmo)this).ShouldBeActive())
+            {
+                SetMaterialColor(Color.yellow);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+
         }
 
         public void SetMaterialColor(Color color)
