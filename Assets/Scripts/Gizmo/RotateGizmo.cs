@@ -25,6 +25,8 @@ namespace TilesEditor
         public Color baseColor;
         protected MaterialPropertyBlock propertyBlock;
 
+        private bool isHovered = false;
+
         public void Initialize(Axis axisType, Color color, TransformGizmo gizmo, float thickness)
         {
             axis = axisType;
@@ -60,36 +62,63 @@ namespace TilesEditor
             SetMaterialColor(baseColor);
         }
 
-        /// <summary>
-        /// 判斷滑鼠是否在螢幕上的旋轉 Gizmo 橢圓環上（不使用 Collider）。
-        /// </summary>
-        /// <param name="circleCenter">圓心（世界座標）</param>
-        /// <param name="circleNormal">圓面法向量（世界座標）</param>
-        /// <param name="radius">圓半徑</param>
-        /// <returns>滑鼠是否在橢圓環上</returns>
+        private void OnMouseEnter()
+        {
+            isHovered = true;
+            SetMaterialColor(Color.yellow);
+        }
+
+        private void OnMouseExit()
+        {
+            isHovered = false;
+            SetMaterialColor(baseColor);
+        }
+
+        private void OnMouseDown()
+        {
+            if (gizmo == null || gizmo.target == null || cam == null) return;
+            gizmo.activeGizmo = this;
+            gizmo.rotationPlane = new Plane(WorldAxis, gizmo.target.position);
+            Ray ray = cam.ScreenPointToRay(Input.mousePosition);
+            if (gizmo.rotationPlane.Raycast(ray, out float enter))
+            {
+                gizmo.rotateStartPoint = ray.GetPoint(enter);
+                gizmo.objectStartRot = gizmo.target.rotation;
+            }
+        }
+
+        private void OnMouseDrag()
+        {
+            if (gizmo == null || gizmo.target == null || cam == null) return;
+            Ray ray = cam.ScreenPointToRay(Input.mousePosition);
+            if (gizmo.rotationPlane.Raycast(ray, out float enter))
+            {
+                Vector3 currentPoint = ray.GetPoint(enter);
+                Vector3 startDir = (gizmo.rotateStartPoint - gizmo.target.position).normalized;
+                Vector3 currentDir = (currentPoint - gizmo.target.position).normalized;
+
+                Quaternion deltaRotation = Quaternion.FromToRotation(startDir, currentDir);
+                deltaRotation.ToAngleAxis(out float angle, out Vector3 axis);
+
+                if (Vector3.Dot(axis, WorldAxis) < 0f)
+                    angle = -angle;
+
+                gizmo.target.rotation = gizmo.objectStartRot * Quaternion.AngleAxis(angle, WorldAxis);
+            }
+        }
+
+        private void OnMouseUp()
+        {
+            if (gizmo != null)
+            {
+                gizmo.activeGizmo = null;
+                ResetColor();
+            }
+        }
+
         public bool IsHovered()
         {
-            Vector3 circleNormal;
-            switch (axis)
-            {
-                case Axis.X: circleNormal = gizmo.transform.right; break;
-                case Axis.Y: circleNormal = gizmo.transform.up; break;
-                case Axis.Z: circleNormal = gizmo.transform.forward; break;
-                default: circleNormal = gizmo.transform.forward; break;
-
-            }
-            var ellipse = EllipseProjectionUtility.ProjectCircleToScreen(cam, gizmo.target.position, circleNormal, RING_RADIUS);
-            Vector2 mousePos = Input.mousePosition;
-            Vector2 delta = mousePos - ellipse.screenCenter;
-            Vector2 majorDir = ellipse.majorAxisDirection.normalized;
-            Vector2 minorDir = new Vector2(-majorDir.y, majorDir.x);
-            float x = Vector2.Dot(delta, majorDir);
-            float y = Vector2.Dot(delta, minorDir);
-            float a = ellipse.majorAxisLength;
-            float b = ellipse.minorAxisLength;
-            float ellipseValue = (x * x) / (a * a) + (y * y) / (b * b);
-            float epsilon = thickness / Mathf.Max(a, b);
-            return (ellipseValue > (1 - epsilon)) && (ellipseValue < (1 + epsilon));
+            return isHovered;
         }
 
         // 判斷此 handle 是否該顯示
@@ -116,9 +145,8 @@ namespace TilesEditor
 
         public void OnDrag()
         {
-            if (gizmo == null || gizmo.target == null || gizmo.cam == null) return;
-
-            Ray ray = gizmo.cam.ScreenPointToRay(Input.mousePosition);
+            if (gizmo == null || gizmo.target == null || cam == null) return;
+            Ray ray = cam.ScreenPointToRay(Input.mousePosition);
             if (gizmo.rotationPlane.Raycast(ray, out float enter))
             {
                 Vector3 currentPoint = ray.GetPoint(enter);

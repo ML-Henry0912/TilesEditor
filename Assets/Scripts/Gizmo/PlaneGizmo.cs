@@ -19,6 +19,7 @@ namespace TilesEditor
         protected TransformGizmo gizmo;
         public Color baseColor;
         protected MaterialPropertyBlock propertyBlock;
+        Camera cam;
 
         public void Initialize(PlaneType type, Color color, TransformGizmo gizmo)
         {
@@ -26,6 +27,7 @@ namespace TilesEditor
             baseColor = color;
             SetMaterialColor(color);
             this.gizmo = gizmo;
+            this.cam = gizmo.cam;
         }
 
         public void SetInvisible(bool value)
@@ -80,6 +82,42 @@ namespace TilesEditor
             SetMaterialColor(baseColor);
         }
 
+        private void OnMouseDown()
+        {
+            if (gizmo == null || gizmo.target == null || cam == null) return;
+            gizmo.activeGizmo = this;
+            Plane dragPlane = GetDragPlane(gizmo.transform, gizmo.target.position);
+            Ray ray = cam.ScreenPointToRay(Input.mousePosition);
+            if (dragPlane.Raycast(ray, out float enter))
+            {
+                gizmo.dragStartPos = ray.GetPoint(enter);
+                gizmo.objectStartPos = gizmo.target.position;
+            }
+        }
+
+        private void OnMouseDrag()
+        {
+            if (gizmo == null || gizmo.target == null || cam == null) return;
+            Ray ray = cam.ScreenPointToRay(Input.mousePosition);
+            Plane dragPlane = GetDragPlane(gizmo.transform, gizmo.target.position);
+            if (dragPlane.Raycast(ray, out float enter))
+            {
+                Vector3 currentPoint = ray.GetPoint(enter);
+                Vector3 delta = currentPoint - gizmo.dragStartPos;
+                if (delta.magnitude < 100f)
+                    gizmo.target.position = gizmo.objectStartPos + delta;
+            }
+        }
+
+        private void OnMouseUp()
+        {
+            if (gizmo != null)
+            {
+                gizmo.activeGizmo = null;
+                ResetColor();
+            }
+        }
+
         public bool IsHovered()
         {
             return isHovered;
@@ -100,9 +138,8 @@ namespace TilesEditor
 
         public void OnDrag()
         {
-            if (gizmo == null || gizmo.target == null || gizmo.cam == null) return;
-
-            Ray ray = gizmo.cam.ScreenPointToRay(Input.mousePosition);
+            if (gizmo == null || gizmo.target == null || cam == null) return;
+            Ray ray = cam.ScreenPointToRay(Input.mousePosition);
             Plane dragPlane = GetDragPlane(gizmo.transform, gizmo.target.position);
             if (dragPlane.Raycast(ray, out float enter))
             {

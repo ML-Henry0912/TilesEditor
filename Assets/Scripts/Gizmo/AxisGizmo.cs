@@ -70,6 +70,35 @@ namespace TilesEditor
             SetMaterialColor(baseColor);
         }
 
+        private void OnMouseDown()
+        {
+            if (gizmo == null || gizmo.target == null || cam == null) return;
+            gizmo.activeGizmo = this;
+            Vector3 axisDir = gizmo.transform.TransformDirection(WorldDirection).normalized;
+            gizmo.dragStartPos = gizmo.GetClosestPointOnAxis(cam.ScreenPointToRay(Input.mousePosition), gizmo.target.position, axisDir);
+            gizmo.objectStartPos = gizmo.target.position;
+        }
+
+        private void OnMouseDrag()
+        {
+            if (gizmo == null || gizmo.target == null || cam == null) return;
+            Ray ray = cam.ScreenPointToRay(Input.mousePosition);
+            Vector3 axisDir = gizmo.transform.TransformDirection(WorldDirection).normalized;
+            Vector3 current = gizmo.GetClosestPointOnAxis(ray, gizmo.target.position, axisDir);
+            Vector3 delta = Vector3.Project(current - gizmo.dragStartPos, axisDir);
+            if (delta.magnitude < 100f)
+                gizmo.target.position = gizmo.objectStartPos + delta;
+        }
+
+        private void OnMouseUp()
+        {
+            if (gizmo != null)
+            {
+                gizmo.activeGizmo = null;
+                ResetColor();
+            }
+        }
+
         public bool IsHovered()
         {
             return isHovered;

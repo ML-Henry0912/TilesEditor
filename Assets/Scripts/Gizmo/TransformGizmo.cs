@@ -46,7 +46,7 @@ namespace TilesEditor
 
         public Vector3 dragStartPos, objectStartPos;
         [Header("Active Gizmo")]
-        [SerializeField] private iGizmo activeGizmo;
+        public iGizmo activeGizmo;
         [Header("Active Gizmos")]
         [SerializeField] private AxisGizmo axisGizmo;
         [SerializeField] private PlaneGizmo planeGizmo;
@@ -99,15 +99,12 @@ namespace TilesEditor
             }
         }
 
-
         void Update()
         {
             if (!initialized || target == null || cam == null) return;
 
             transform.position = target.position;
             transform.rotation = target.rotation;
-
-            action?.Invoke();
         }
 
         // 狀態：Idle，檢查是否 hover 到 handle
@@ -373,7 +370,6 @@ namespace TilesEditor
             return gizmo;
         }
 
-
         public static class TorusMeshGenerator
         {
             public static Mesh Generate(float ringRadius = 1f, float tubeRadius = 0.05f, int segments = 64, int sides = 12)
@@ -443,9 +439,6 @@ namespace TilesEditor
             }
         }
 
-
-
-
         protected void SetPlaneGizmoProperties(PlaneType type, Vector3? position = null)
         {
             PlaneGizmo targetGizmo = null;
@@ -485,7 +478,5 @@ namespace TilesEditor
                     break;
             }
         }
-
-
     }
 }
