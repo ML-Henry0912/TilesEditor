@@ -10,7 +10,7 @@ namespace TilesEditor
         protected GizmoType type;
 
         protected bool isHovered = false;
-        protected TransformGizmo theGizmo;
+        protected TransformGizmo gizmoRoot;
         protected Color baseColor;
         protected MaterialPropertyBlock propertyBlock;
         protected Camera cam;
@@ -38,8 +38,8 @@ namespace TilesEditor
 
         public bool ShouldBeActive()
         {
-            if (theGizmo == null) return false;
-            return theGizmo.gizmoEnable[(int)type];
+            if (gizmoRoot == null) return false;
+            return gizmoRoot.gizmoEnable[(int)type];
         }
 
         public bool IsHovered()

@@ -17,15 +17,15 @@ namespace TilesEditor
         private Vector3 objectStartPos;
         private Transform target;
 
-        public void Initialize(GizmoType type, TransformGizmo gizmo)
+        public void Initialize(GizmoType type, TransformGizmo gizmoRoot)
         {
             this.type = type;
-            baseColor = gizmo.gizmoColors[(int)type];
+            baseColor = gizmoRoot.gizmoColors[(int)type];
             SetMaterialColor(baseColor);
-            cam = gizmo.cam;
-            target = gizmo.target;
+            cam = gizmoRoot.cam;
+            target = gizmoRoot.target;
 
-            theGizmo = gizmo;
+            base.gizmoRoot = gizmoRoot;
 
             gameObject.SetActive(ShouldBeActive());
         }
@@ -34,7 +34,7 @@ namespace TilesEditor
         {
             if (Input.GetMouseButtonUp(0))
             {
-                theGizmo.EndDrag();
+                gizmoRoot.EndDrag();
                 return;
             }
 
@@ -50,14 +50,14 @@ namespace TilesEditor
         {
             if (Input.GetMouseButtonDown(0))
             {
-                theGizmo.action = OnDrag;
+                gizmoRoot.action = OnDrag;
                 Vector3 axisDir = transform.TransformDirection(Vector3.up).normalized;
                 dragStartPos = GetClosestPointOnAxis(cam.ScreenPointToRay(Input.mousePosition), target.position, axisDir);
                 objectStartPos = target.position;
             }
             else if (!IsHovered())
             {
-                theGizmo.EndDrag();
+                gizmoRoot.EndDrag();
             }
         }
 

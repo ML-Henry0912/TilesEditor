@@ -19,13 +19,13 @@ namespace TilesEditor
         private Plane rotationPlane;
         private Transform target;
 
-        public void Initialize(GizmoType type, TransformGizmo gizmo)
+        public void Initialize(GizmoType type, TransformGizmo gizmoRoot)
         {
-            this.theGizmo = gizmo;
+            this.gizmoRoot = gizmoRoot;
             this.type = type;
-            baseColor = gizmo.gizmoColors[(int)type];
+            baseColor = gizmoRoot.gizmoColors[(int)type];
             SetMaterialColor(baseColor);
-            target = gizmo.target;
+            target = gizmoRoot.target;
 
             switch (type)
             {
@@ -34,7 +34,7 @@ namespace TilesEditor
                 case GizmoType.ROT_Z: WorldAxis = Vector3.forward; break;
             }
 
-            this.cam = gizmo.cam;
+            this.cam = gizmoRoot.cam;
             gameObject.SetActive(ShouldBeActive());
         }
 
@@ -42,7 +42,7 @@ namespace TilesEditor
         {
             if (Input.GetMouseButtonUp(0))
             {
-                theGizmo.EndDrag();
+                gizmoRoot.EndDrag();
                 return;
             }
 
@@ -67,7 +67,7 @@ namespace TilesEditor
         {
             if (Input.GetMouseButtonDown(0))
             {
-                theGizmo.action = OnDrag;
+                gizmoRoot.action = OnDrag;
                 rotationPlane = new Plane(WorldAxis, target.position);
                 Ray ray = cam.ScreenPointToRay(Input.mousePosition);
                 if (rotationPlane.Raycast(ray, out float enter))
@@ -78,7 +78,7 @@ namespace TilesEditor
             }
             else if (!IsHovered())
             {
-                theGizmo.EndDrag();
+                gizmoRoot.EndDrag();
             }
         }
     }

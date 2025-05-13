@@ -13,28 +13,28 @@ namespace TilesEditor
 {
     public class PlaneGizmo : GizmoBase, iGizmo
     {
-        public void Initialize(GizmoType type, TransformGizmo gizmo)
+        public void Initialize(GizmoType type, TransformGizmo gizmoRoot)
         {
             this.type = type;
-            baseColor = gizmo.gizmoColors[(int)type];
+            baseColor = gizmoRoot.gizmoColors[(int)type];
             SetMaterialColor(baseColor);
-            this.theGizmo = gizmo;
-            this.cam = gizmo.cam;
+            this.gizmoRoot = gizmoRoot;
+            this.cam = gizmoRoot.cam;
             gameObject.SetActive(ShouldBeActive());
         }
 
 
         public void OnDrag()
         {
-            if (theGizmo == null || theGizmo.target == null || cam == null) return;
+            if (gizmoRoot == null || gizmoRoot.target == null || cam == null) return;
             Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-            Plane dragPlane = GetDragPlane(theGizmo.transform, theGizmo.target.position);
+            Plane dragPlane = GetDragPlane(gizmoRoot.transform, gizmoRoot.target.position);
             if (dragPlane.Raycast(ray, out float enter))
             {
                 Vector3 currentPoint = ray.GetPoint(enter);
-                Vector3 delta = currentPoint - theGizmo.dragStartPos;
+                Vector3 delta = currentPoint - gizmoRoot.dragStartPos;
                 if (delta.magnitude < 100f)
-                    theGizmo.target.position = theGizmo.objectStartPos + delta;
+                    gizmoRoot.target.position = gizmoRoot.objectStartPos + delta;
             }
         }
 

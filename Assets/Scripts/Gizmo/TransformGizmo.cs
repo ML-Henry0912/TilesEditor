@@ -193,17 +193,6 @@ namespace TilesEditor
             }
         }
 
-        // 拖曳旋轉
-        void OnDragRotate()
-        {
-            if (Input.GetMouseButtonUp(0))
-            {
-                EndDrag();
-                return;
-            }
-
-        }
-
         public void EndDrag()
         {
             activeGizmo?.ResetColor();
