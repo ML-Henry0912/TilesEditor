@@ -13,6 +13,10 @@ namespace TilesEditor
 {
     public class PlaneGizmo : GizmoBase, iGizmo
     {
+        private Transform target;
+        private Vector3 dragStartPos;
+        private Vector3 objectStartPos;
+
         public void Initialize(GizmoType type, TransformGizmo gizmoRoot)
         {
             this.type = type;
@@ -20,10 +24,9 @@ namespace TilesEditor
             SetMaterialColor(baseColor);
             this.gizmoRoot = gizmoRoot;
             this.cam = gizmoRoot.cam;
+            this.target = gizmoRoot.target;
             gameObject.SetActive(ShouldBeActive());
         }
-
-
 
         public void OnDrag()
         {
@@ -34,16 +37,14 @@ namespace TilesEditor
             }
 
             Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-            Plane dragPlane = GetDragPlane(transform, gizmoRoot.target.position);
+            Plane dragPlane = GetDragPlane(transform, target.position);
             if (dragPlane.Raycast(ray, out float enter))
             {
                 Vector3 currentPoint = ray.GetPoint(enter);
-                Vector3 delta = currentPoint - gizmoRoot.dragStartPos;
+                Vector3 delta = currentPoint - dragStartPos;
                 if (delta.magnitude < 100f)
-                    gizmoRoot.target.position = gizmoRoot.objectStartPos + delta;
+                    target.position = objectStartPos + delta;
             }
-
-
         }
 
         public Plane GetDragPlane(Transform gizmoTransform, Vector3 center)
@@ -62,7 +63,7 @@ namespace TilesEditor
             if (Input.GetMouseButtonDown(0))
             {
                 gizmoRoot.action = OnDrag;
-                Plane dragPlane = GetDragPlane(transform, gizmoRoot.target.position);
+                Plane dragPlane = GetDragPlane(transform, target.position);
                 Ray ray = cam.ScreenPointToRay(Input.mousePosition);
                 if (!dragPlane.Raycast(ray, out float enter))
                 {
@@ -70,15 +71,13 @@ namespace TilesEditor
                     if (!dragPlane.Raycast(ray, out enter))
                         return;
                 }
-                gizmoRoot.dragStartPos = ray.GetPoint(enter);
-                gizmoRoot.objectStartPos = gizmoRoot.target.position;
-
+                dragStartPos = ray.GetPoint(enter);
+                objectStartPos = target.position;
             }
             else if (!IsHovered())
             {
                 gizmoRoot.EndDrag();
             }
         }
-
     }
 }
