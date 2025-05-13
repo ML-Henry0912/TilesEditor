@@ -7,13 +7,13 @@
 // 5. 本元件為 TransformGizmo 的子物件，請勿手動移除或更改父子結構。
 // =============================================
 using UnityEngine;
+using static TilesEditor.iGizmo;
 
 namespace TilesEditor
 {
     public class AxisGizmo : MonoBehaviour, iGizmo
     {
-        public enum Axis { X, Y, Z }
-        public Axis axis;
+        public GizmoType axis;
 
         [HideInInspector] public Vector3 WorldDirection;
 
@@ -24,7 +24,7 @@ namespace TilesEditor
 
         Camera cam;
 
-        public void Initialize(Axis axisType, Color color, TransformGizmo gizmo)
+        public void Initialize(GizmoType axisType, Color color, TransformGizmo gizmo)
         {
             axis = axisType;
             baseColor = color;
@@ -33,9 +33,9 @@ namespace TilesEditor
 
             switch (axis)
             {
-                case Axis.X: WorldDirection = Vector3.right; break;
-                case Axis.Y: WorldDirection = Vector3.up; break;
-                case Axis.Z: WorldDirection = Vector3.forward; break;
+                case GizmoType.X: WorldDirection = Vector3.right; break;
+                case GizmoType.Y: WorldDirection = Vector3.up; break;
+                case GizmoType.Z: WorldDirection = Vector3.forward; break;
             }
             this.gizmo = gizmo;
         }
@@ -81,9 +81,9 @@ namespace TilesEditor
             if (gizmo == null) return false;
             switch (axis)
             {
-                case Axis.X: return gizmo.translateX;
-                case Axis.Y: return gizmo.translateY;
-                case Axis.Z: return gizmo.translateZ;
+                case GizmoType.X: return gizmo.translateX;
+                case GizmoType.Y: return gizmo.translateY;
+                case GizmoType.Z: return gizmo.translateZ;
                 default: return false;
             }
         }

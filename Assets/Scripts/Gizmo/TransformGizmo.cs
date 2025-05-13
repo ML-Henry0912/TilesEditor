@@ -12,6 +12,7 @@ using System;
 using UnityEngine;
 using System.Collections.Generic;
 using static TilesEditor.PlaneGizmo;
+using static TilesEditor.iGizmo;
 
 namespace TilesEditor
 {
@@ -87,12 +88,6 @@ namespace TilesEditor
             }
         }
 
-        private Material GetAxisMaterial(int index)
-        {
-            return materials.materials[index];
-
-        }
-
         private Color GetPlaneColor(int index)
         {
             switch (index)
@@ -104,11 +99,6 @@ namespace TilesEditor
             }
         }
 
-        private Material GetPlaneMaterial(int index)
-        {
-            return materials.materials[index];
-
-        }
 
         void Update()
         {
@@ -308,60 +298,20 @@ namespace TilesEditor
 
         void CreateAllHandles()
         {
-            if (!initialized)
-            {
-                allGizmos[0] = CreateAxisHandle("X_Handle", new Vector3(AXIS_HANDLE_OFFSET, 0.0f, 0.0f), Quaternion.Euler(0.0f, 0.0f, -90.0f), Color.red, AxisGizmo.Axis.X);
-                allGizmos[1] = CreateAxisHandle("Y_Handle", new Vector3(0.0f, AXIS_HANDLE_OFFSET, 0.0f), Quaternion.identity, Color.green, AxisGizmo.Axis.Y);
-                allGizmos[2] = CreateAxisHandle("Z_Handle", new Vector3(0.0f, 0.0f, AXIS_HANDLE_OFFSET), Quaternion.Euler(90.0f, 0.0f, 0.0f), Color.blue, AxisGizmo.Axis.Z);
+            allGizmos[0] = CreateAxisHandle("X_Handle", new Vector3(AXIS_HANDLE_OFFSET, 0.0f, 0.0f), Quaternion.Euler(0.0f, 0.0f, -90.0f), Color.red, GizmoType.X);
+            allGizmos[1] = CreateAxisHandle("Y_Handle", new Vector3(0.0f, AXIS_HANDLE_OFFSET, 0.0f), Quaternion.identity, Color.green, GizmoType.Y);
+            allGizmos[2] = CreateAxisHandle("Z_Handle", new Vector3(0.0f, 0.0f, AXIS_HANDLE_OFFSET), Quaternion.Euler(90.0f, 0.0f, 0.0f), Color.blue, GizmoType.Z);
 
-                allGizmos[3] = CreatePlaneHandle("XY_Handle", new Vector3(PLANE_HANDLE_OFFSET, PLANE_HANDLE_OFFSET, 0.0f), Quaternion.identity, new Color(1.0f, 1.0f, 0.0f, 0.3f), PlaneType.XY, PLANE_HANDLE_SIZE);
-                allGizmos[4] = CreatePlaneHandle("XZ_Handle", new Vector3(PLANE_HANDLE_OFFSET, 0.0f, PLANE_HANDLE_OFFSET), Quaternion.Euler(90.0f, 0.0f, 0.0f), new Color(1.0f, 0.0f, 1.0f, 0.3f), PlaneType.XZ, PLANE_HANDLE_SIZE);
-                allGizmos[5] = CreatePlaneHandle("YZ_Handle", new Vector3(0.0f, PLANE_HANDLE_OFFSET, PLANE_HANDLE_OFFSET), Quaternion.Euler(0.0f, -90.0f, 0.0f), new Color(0.0f, 1.0f, 1.0f, 0.3f), PlaneType.YZ, PLANE_HANDLE_SIZE);
+            allGizmos[3] = CreatePlaneHandle("XY_Handle", new Vector3(PLANE_HANDLE_OFFSET, PLANE_HANDLE_OFFSET, 0.0f), Quaternion.identity, new Color(1.0f, 1.0f, 0.0f, 0.3f), PlaneType.XY, PLANE_HANDLE_SIZE);
+            allGizmos[4] = CreatePlaneHandle("XZ_Handle", new Vector3(PLANE_HANDLE_OFFSET, 0.0f, PLANE_HANDLE_OFFSET), Quaternion.Euler(90.0f, 0.0f, 0.0f), new Color(1.0f, 0.0f, 1.0f, 0.3f), PlaneType.XZ, PLANE_HANDLE_SIZE);
+            allGizmos[5] = CreatePlaneHandle("YZ_Handle", new Vector3(0.0f, PLANE_HANDLE_OFFSET, PLANE_HANDLE_OFFSET), Quaternion.Euler(0.0f, -90.0f, 0.0f), new Color(0.0f, 1.0f, 1.0f, 0.3f), PlaneType.YZ, PLANE_HANDLE_SIZE);
 
-                allGizmos[6] = CreateRotateHandle("X_Rotate", Vector3.zero, Quaternion.Euler(0.0f, 0.0f, 90.0f), Color.red, RotateGizmo.Axis.X);
-                allGizmos[7] = CreateRotateHandle("Y_Rotate", Vector3.zero, Quaternion.identity, Color.green, RotateGizmo.Axis.Y);
-                allGizmos[8] = CreateRotateHandle("Z_Rotate", Vector3.zero, Quaternion.Euler(90.0f, 0.0f, 0.0f), Color.blue, RotateGizmo.Axis.Z);
-            }
-            else
-            {
-                for (int i = 0; i < allGizmos.Length; i++)
-                {
-                    if (allGizmos[i] != null)
-                    {
-                        var gizmo = allGizmos[i];
-                        if (gizmo is AxisGizmo axisGizmo)
-                        {
-                            axisGizmo.Initialize((AxisGizmo.Axis)i, GetAxisColor(i), this);
-                            var renderer = (gizmo as MonoBehaviour).GetComponent<MeshRenderer>();
-                            if (renderer != null) renderer.sharedMaterial = GetAxisMaterial(i);
-                        }
-                        else if (gizmo is PlaneGizmo planeGizmo)
-                        {
-                            planeGizmo.Initialize((PlaneGizmo.PlaneType)(i - 3), GetPlaneColor(i), this);
-                            var renderer = (gizmo as MonoBehaviour).GetComponent<MeshRenderer>();
-                            if (renderer != null) renderer.sharedMaterial = GetPlaneMaterial(i);
-                        }
-                        else if (gizmo is RotateGizmo rotateGizmo)
-                        {
-                            rotateGizmo.Initialize((RotateGizmo.Axis)(i - 6), GetAxisColor(i - 6), this, AXIS_HANDLE_THICKNESS);
-                            var renderer = (gizmo as MonoBehaviour).GetComponent<MeshRenderer>();
-                            if (renderer != null) renderer.sharedMaterial = GetAxisMaterial(i - 6);
-                        }
-                    }
-
-                }
-            }
-
-            for (int i = 0; i < allGizmos.Length; i++)
-            {
-                if (allGizmos[i] != null)
-                {
-                    (allGizmos[i] as MonoBehaviour).gameObject.SetActive(allGizmos[i].ShouldBeActive());
-                }
-            }
+            allGizmos[6] = CreateRotateHandle("X_Rotate", Vector3.zero, Quaternion.Euler(0.0f, 0.0f, 90.0f), Color.red, RotateGizmo.Axis.X);
+            allGizmos[7] = CreateRotateHandle("Y_Rotate", Vector3.zero, Quaternion.identity, Color.green, RotateGizmo.Axis.Y);
+            allGizmos[8] = CreateRotateHandle("Z_Rotate", Vector3.zero, Quaternion.Euler(90.0f, 0.0f, 0.0f), Color.blue, RotateGizmo.Axis.Z);
         }
 
-        AxisGizmo CreateAxisHandle(string name, Vector3 localPos, Quaternion localRot, Color color, AxisGizmo.Axis axis)
+        AxisGizmo CreateAxisHandle(string name, Vector3 localPos, Quaternion localRot, Color color, GizmoType axis)
         {
             GameObject go = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
             go.name = name;
@@ -374,9 +324,9 @@ namespace TilesEditor
             axisGizmo.Initialize(axis, color, this);
             // 指定材質
             var renderer = go.GetComponent<MeshRenderer>();
-            if (axis == AxisGizmo.Axis.X) renderer.sharedMaterial = materials.materials[iGizmo.GIZMO_X];
-            else if (axis == AxisGizmo.Axis.Y) renderer.sharedMaterial = materials.materials[iGizmo.GIZMO_Y];
-            else if (axis == AxisGizmo.Axis.Z) renderer.sharedMaterial = materials.materials[iGizmo.GIZMO_Z];
+            if (axis == GizmoType.X) renderer.sharedMaterial = materials.materials[iGizmo.GIZMO_X];
+            else if (axis == GizmoType.Y) renderer.sharedMaterial = materials.materials[iGizmo.GIZMO_Y];
+            else if (axis == GizmoType.Z) renderer.sharedMaterial = materials.materials[iGizmo.GIZMO_Z];
             return axisGizmo;
         }
 
@@ -395,9 +345,9 @@ namespace TilesEditor
             planeGizmo.Initialize(type, color, this);
             // 指定材質
             var renderer = go.GetComponent<MeshRenderer>();
-            if (type == PlaneType.XY) renderer.sharedMaterial = materials.materials[iGizmo.GIZMO_XY];
-            else if (type == PlaneType.XZ) renderer.sharedMaterial = materials.materials[iGizmo.GIZMO_XZ];
-            else if (type == PlaneType.YZ) renderer.sharedMaterial = materials.materials[iGizmo.GIZMO_YZ];
+            if (type == PlaneType.XY) renderer.sharedMaterial = materials.materials[GIZMO_XY];
+            else if (type == PlaneType.XZ) renderer.sharedMaterial = materials.materials[GIZMO_XZ];
+            else if (type == PlaneType.YZ) renderer.sharedMaterial = materials.materials[GIZMO_YZ];
             return planeGizmo;
         }
 
@@ -410,22 +360,26 @@ namespace TilesEditor
             go.transform.localScale = Vector3.one * ROTATE_HANDLE_SCALE;
             var mf = go.AddComponent<MeshFilter>();
             var mr = go.AddComponent<MeshRenderer>();
-            mf.mesh = TorusMeshGenerator.Generate(1.0f, 0.05f, 64, 12);
+            var mesh = TorusMeshGenerator.Generate(1.0f, 0.05f, 64, 12);
+            mf.mesh = mesh;
+            var mc = go.AddComponent<MeshCollider>();
+            mc.sharedMesh = mesh;
             var gizmo = go.AddComponent<RotateGizmo>();
             gizmo.Initialize(axis, color, this, AXIS_HANDLE_THICKNESS);
             // 指定材質
-            if (axis == RotateGizmo.Axis.X) mr.sharedMaterial = materials.materials[iGizmo.GIZMO_X];
-            else if (axis == RotateGizmo.Axis.Y) mr.sharedMaterial = materials.materials[iGizmo.GIZMO_Y];
-            else if (axis == RotateGizmo.Axis.Z) mr.sharedMaterial = materials.materials[iGizmo.GIZMO_Z];
+            if (axis == RotateGizmo.Axis.X) mr.sharedMaterial = materials.materials[GIZMO_X];
+            else if (axis == RotateGizmo.Axis.Y) mr.sharedMaterial = materials.materials[GIZMO_Y];
+            else if (axis == RotateGizmo.Axis.Z) mr.sharedMaterial = materials.materials[GIZMO_Z];
             return gizmo;
         }
+
 
         public static class TorusMeshGenerator
         {
             public static Mesh Generate(float ringRadius = 1f, float tubeRadius = 0.05f, int segments = 64, int sides = 12)
             {
                 Mesh mesh = new Mesh();
-                mesh.name = "FullTorus";
+                mesh.name = "Torus";
 
                 int vertexCount = segments * sides;
                 Vector3[] vertices = new Vector3[vertexCount];
@@ -489,7 +443,10 @@ namespace TilesEditor
             }
         }
 
-        protected void SetPlaneGizmoProperties(PlaneGizmo.PlaneType type, Vector3? position = null)
+
+
+
+        protected void SetPlaneGizmoProperties(PlaneType type, Vector3? position = null)
         {
             PlaneGizmo targetGizmo = null;
             switch (type)

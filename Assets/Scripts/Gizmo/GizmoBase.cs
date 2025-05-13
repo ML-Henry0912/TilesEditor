@@ -20,6 +20,9 @@ namespace TilesEditor
         public const int GIZMO_YZ = 5;
         public const int GIZMO_HOVER = 6;
 
+        public enum GizmoType : int { X, Y, Z, XY, XZ, YZ }
+
+
         void SetMaterialColor(Color color);
         void ResetColor();
         bool ShouldBeActive();
