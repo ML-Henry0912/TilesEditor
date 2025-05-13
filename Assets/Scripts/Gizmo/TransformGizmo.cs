@@ -199,9 +199,8 @@ namespace TilesEditor
 
                 if (gizmo != null && gizmo.ShouldBeActive() && gizmo.IsHovered())
                 {
-                    gizmo.SetMaterialColor(Color.yellow);
                     var mr = (gizmo as MonoBehaviour)?.GetComponent<MeshRenderer>();
-                    if (mr != null) mr.sharedMaterial = materials.materials[iGizmo.GIZMO_HOVER];
+                    if (mr != null) mr.sharedMaterial = materials.materials[GIZMO_HOVER];
                     hoverFound = true;
                 }
             }
