@@ -15,16 +15,18 @@ namespace TilesEditor
         protected MaterialPropertyBlock propertyBlock;
         protected Camera cam;
 
+        protected bool isdragging = false;
+
         private void OnMouseEnter()
         {
             isHovered = true;
-            //SetMaterialColor(Color.yellow);
         }
 
         private void OnMouseExit()
         {
             isHovered = false;
-            SetMaterialColor(baseColor);
+            if (!isdragging)
+                SetMaterialColor(baseColor);
         }
 
         public void SetInvisible(bool value)

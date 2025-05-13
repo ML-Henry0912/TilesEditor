@@ -30,23 +30,27 @@ namespace TilesEditor
 
         public void OnDrag()
         {
-            Debug.Log("OnDrag");
-            if (Input.GetMouseButtonUp(0))
+            if (Input.GetMouseButton(0))
             {
+                Ray ray = cam.ScreenPointToRay(Input.mousePosition);
+                Plane dragPlane = GetDragPlane(transform, target.position);
+                if (dragPlane.Raycast(ray, out float enter))
+                {
+                    Vector3 currentPoint = ray.GetPoint(enter);
+                    Vector3 delta = currentPoint - dragStartPos;
+                    if (delta.magnitude < 100f)
+                        target.position = objectStartPos + delta;
+                }
+
+            }
+            else
+            {
+                isdragging = false;
                 ResetColor();
                 gizmoRoot.EndDrag();
-                return;
+
             }
 
-            Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-            Plane dragPlane = GetDragPlane(transform, target.position);
-            if (dragPlane.Raycast(ray, out float enter))
-            {
-                Vector3 currentPoint = ray.GetPoint(enter);
-                Vector3 delta = currentPoint - dragStartPos;
-                if (delta.magnitude < 100f)
-                    target.position = objectStartPos + delta;
-            }
         }
 
         public Plane GetDragPlane(Transform gizmoTransform, Vector3 center)
@@ -62,10 +66,9 @@ namespace TilesEditor
 
         public void OnHover()
         {
-            Debug.Log("OnHover");
-
             if (Input.GetMouseButton(0))
             {
+                isdragging = true;
                 gizmoRoot.action = OnDrag;
                 Plane dragPlane = GetDragPlane(transform, target.position);
                 Ray ray = cam.ScreenPointToRay(Input.mousePosition);

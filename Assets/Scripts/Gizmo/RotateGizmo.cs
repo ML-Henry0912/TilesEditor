@@ -40,35 +40,41 @@ namespace TilesEditor
 
         public void OnDrag()
         {
-            if (Input.GetMouseButtonUp(0))
+            if (Input.GetMouseButton(0))
             {
+                Ray ray = cam.ScreenPointToRay(Input.mousePosition);
+                if (rotationPlane.Raycast(ray, out float enter))
+                {
+                    Vector3 currentPoint = ray.GetPoint(enter);
+                    Vector3 startDir = (rotateStartPoint - target.position).normalized;
+                    Vector3 currentDir = (currentPoint - target.position).normalized;
+
+                    Quaternion deltaRotation = Quaternion.FromToRotation(startDir, currentDir);
+                    deltaRotation.ToAngleAxis(out float angle, out Vector3 axis);
+
+                    if (Vector3.Dot(axis, WorldAxis) < 0f)
+                        angle = -angle;
+
+                    target.rotation = objectStartRot * Quaternion.AngleAxis(angle, WorldAxis);
+
+                }
+
+            }
+            else
+            {
+                isdragging = false;
                 ResetColor();
                 gizmoRoot.EndDrag();
-                return;
-            }
-
-            Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-            if (rotationPlane.Raycast(ray, out float enter))
-            {
-                Vector3 currentPoint = ray.GetPoint(enter);
-                Vector3 startDir = (rotateStartPoint - target.position).normalized;
-                Vector3 currentDir = (currentPoint - target.position).normalized;
-
-                Quaternion deltaRotation = Quaternion.FromToRotation(startDir, currentDir);
-                deltaRotation.ToAngleAxis(out float angle, out Vector3 axis);
-
-                if (Vector3.Dot(axis, WorldAxis) < 0f)
-                    angle = -angle;
-
-                target.rotation = objectStartRot * Quaternion.AngleAxis(angle, WorldAxis);
 
             }
+
         }
 
         public void OnHover()
         {
-            if (Input.GetMouseButtonDown(0))
+            if (Input.GetMouseButton(0))
             {
+                isdragging = true;
                 gizmoRoot.action = OnDrag;
                 rotationPlane = new Plane(WorldAxis, target.position);
                 Ray ray = cam.ScreenPointToRay(Input.mousePosition);
