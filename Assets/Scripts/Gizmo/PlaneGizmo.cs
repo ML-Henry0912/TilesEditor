@@ -11,20 +11,11 @@ using static TilesEditor.iGizmo;
 
 namespace TilesEditor
 {
-    public class PlaneGizmo : MonoBehaviour, iGizmo
+    public class PlaneGizmo : GizmoBase, iGizmo
     {
-        public GizmoType type;
-
-        private bool isHovered = false;
-        protected TransformGizmo gizmo;
-        public Color baseColor;
-        protected MaterialPropertyBlock propertyBlock;
-        Camera cam;
-
         public void Initialize(GizmoType type, TransformGizmo gizmo)
         {
             this.type = type;
-            //baseColor = color;
             baseColor = gizmo.gizmoColors[(int)type];
             SetMaterialColor(baseColor);
             this.gizmo = gizmo;
@@ -41,20 +32,6 @@ namespace TilesEditor
                 ren.enabled = true;
         }
 
-        public void SetMaterialColor(Color color)
-        {
-            if (propertyBlock == null)
-                propertyBlock = new MaterialPropertyBlock();
-
-            Color finalColor = new Color(color.r, color.g, color.b, 0.8f);
-            propertyBlock.SetColor("_Color", finalColor);
-
-            var renderer = GetComponent<MeshRenderer>();
-            if (renderer != null)
-            {
-                renderer.SetPropertyBlock(propertyBlock);
-            }
-        }
 
         public void ResetColor()
         {

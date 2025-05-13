@@ -11,23 +11,13 @@ using static TilesEditor.iGizmo;
 
 namespace TilesEditor
 {
-    public class AxisGizmo : MonoBehaviour, iGizmo
+    public class AxisGizmo : GizmoBase, iGizmo
     {
-        public GizmoType type;
-
         [HideInInspector] public Vector3 WorldDirection;
-
-        private bool isHovered = false;
-        protected TransformGizmo gizmo;
-        public Color baseColor;
-        protected MaterialPropertyBlock propertyBlock;
-
-        Camera cam;
 
         public void Initialize(GizmoType type, TransformGizmo gizmo)
         {
             this.type = type;
-            //baseColor = color;
             baseColor = gizmo.gizmoColors[(int)type];
             SetMaterialColor(baseColor);
             cam = gizmo.cam;
@@ -43,18 +33,6 @@ namespace TilesEditor
             gameObject.SetActive(ShouldBeActive());
         }
 
-        public void SetMaterialColor(Color color)
-        {
-            if (propertyBlock == null)
-                propertyBlock = new MaterialPropertyBlock();
-            color.a = 0.8f; // 預設 80% 透明度
-            propertyBlock.SetColor("_Color", color);
-            var renderer = GetComponent<MeshRenderer>();
-            if (renderer != null)
-            {
-                renderer.SetPropertyBlock(propertyBlock);
-            }
-        }
 
         public void ResetColor()
         {
@@ -73,10 +51,6 @@ namespace TilesEditor
             SetMaterialColor(baseColor);
         }
 
-        public bool IsHovered()
-        {
-            return isHovered;
-        }
 
         // 判斷此 handle 是否該顯示
         public bool ShouldBeActive()
