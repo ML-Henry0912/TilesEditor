@@ -74,48 +74,6 @@ namespace TilesEditor
             SetMaterialColor(baseColor);
         }
 
-        private void OnMouseDown()
-        {
-            if (gizmo == null || gizmo.target == null || cam == null) return;
-            gizmo.activeGizmo = this;
-            gizmo.rotationPlane = new Plane(WorldAxis, gizmo.target.position);
-            Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-            if (gizmo.rotationPlane.Raycast(ray, out float enter))
-            {
-                gizmo.rotateStartPoint = ray.GetPoint(enter);
-                gizmo.objectStartRot = gizmo.target.rotation;
-            }
-        }
-
-        private void OnMouseDrag()
-        {
-            if (gizmo == null || gizmo.target == null || cam == null) return;
-            Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-            if (gizmo.rotationPlane.Raycast(ray, out float enter))
-            {
-                Vector3 currentPoint = ray.GetPoint(enter);
-                Vector3 startDir = (gizmo.rotateStartPoint - gizmo.target.position).normalized;
-                Vector3 currentDir = (currentPoint - gizmo.target.position).normalized;
-
-                Quaternion deltaRotation = Quaternion.FromToRotation(startDir, currentDir);
-                deltaRotation.ToAngleAxis(out float angle, out Vector3 axis);
-
-                if (Vector3.Dot(axis, WorldAxis) < 0f)
-                    angle = -angle;
-
-                gizmo.target.rotation = gizmo.objectStartRot * Quaternion.AngleAxis(angle, WorldAxis);
-            }
-        }
-
-        private void OnMouseUp()
-        {
-            if (gizmo != null)
-            {
-                gizmo.activeGizmo = null;
-                ResetColor();
-            }
-        }
-
         public bool IsHovered()
         {
             return isHovered;

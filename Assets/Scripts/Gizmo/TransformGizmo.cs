@@ -27,7 +27,7 @@ namespace TilesEditor
         const float AXIS_HANDLE_LENGTH = 0.6f;
         const float AXIS_HANDLE_THICKNESS = 16.0f;
 
-        public Transform target;
+        public Transform target;// { get; private set; }
         public Camera cam;
 
         [Header("Translate Axis Enable")]
@@ -62,13 +62,14 @@ namespace TilesEditor
 
         public void Initialize(Transform target, Camera cam, GizmoMaterials materials)
         {
+            this.target = target;
+
             // 檢查是否已經初始化過相同的目標
             if (initialized && this.cam == cam && this.materials == materials)
             {
                 return;
             }
 
-            this.target = target;
             this.cam = cam;
             this.materials = materials;
 
@@ -77,34 +78,62 @@ namespace TilesEditor
             action = CheckHover;
         }
 
-        private Color GetAxisColor(int index)
-        {
-            switch (index)
-            {
-                case 0: return Color.red;
-                case 1: return Color.green;
-                case 2: return Color.blue;
-                default: return Color.white;
-            }
-        }
-
-        private Color GetPlaneColor(int index)
-        {
-            switch (index)
-            {
-                case 3: return new Color(1.0f, 1.0f, 0.0f, 0.3f);
-                case 4: return new Color(1.0f, 0.0f, 1.0f, 0.3f);
-                case 5: return new Color(0.0f, 1.0f, 1.0f, 0.3f);
-                default: return Color.white;
-            }
-        }
-
         void Update()
         {
             if (!initialized || target == null || cam == null) return;
 
             transform.position = target.position;
             transform.rotation = target.rotation;
+
+            if (Input.GetMouseButtonDown(0))
+            {
+                foreach (var gizmo in allGizmos)
+                {
+                    if (gizmo != null && gizmo.ShouldBeActive() && gizmo.IsHovered())
+                    {
+                        activeGizmo = gizmo;
+                        if (gizmo is RotateGizmo rotateGizmo)
+                        {
+                            rotationPlane = new Plane(rotateGizmo.WorldAxis, target.position);
+                            Ray ray = cam.ScreenPointToRay(Input.mousePosition);
+                            if (rotationPlane.Raycast(ray, out float enter))
+                            {
+                                rotateStartPoint = ray.GetPoint(enter);
+                                objectStartRot = target.rotation;
+                            }
+                        }
+                        else if (gizmo is AxisGizmo axisGizmo)
+                        {
+                            Vector3 axisDir = transform.TransformDirection(axisGizmo.WorldDirection).normalized;
+                            dragStartPos = GetClosestPointOnAxis(cam.ScreenPointToRay(Input.mousePosition), target.position, axisDir);
+                            objectStartPos = target.position;
+                        }
+                        else if (gizmo is PlaneGizmo planeGizmo)
+                        {
+                            Plane dragPlane = planeGizmo.GetDragPlane(transform, target.position);
+                            Ray ray = cam.ScreenPointToRay(Input.mousePosition);
+                            if (dragPlane.Raycast(ray, out float enter))
+                            {
+                                dragStartPos = ray.GetPoint(enter);
+                                objectStartPos = target.position;
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+            else if (Input.GetMouseButtonUp(0))
+            {
+                if (activeGizmo != null)
+                {
+                    activeGizmo.ResetColor();
+                    activeGizmo = null;
+                }
+            }
+            else if (Input.GetMouseButton(0) && activeGizmo != null)
+            {
+                activeGizmo.OnDrag();
+            }
         }
 
         // 狀態：Idle，檢查是否 hover 到 handle
