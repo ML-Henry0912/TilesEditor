@@ -24,11 +24,17 @@ namespace TilesEditor
         }
 
 
+
         public void OnDrag()
         {
-            if (gizmoRoot == null || gizmoRoot.target == null || cam == null) return;
+            if (Input.GetMouseButtonUp(0))
+            {
+                gizmoRoot.EndDrag();
+                return;
+            }
+
             Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-            Plane dragPlane = GetDragPlane(gizmoRoot.transform, gizmoRoot.target.position);
+            Plane dragPlane = GetDragPlane(transform, gizmoRoot.target.position);
             if (dragPlane.Raycast(ray, out float enter))
             {
                 Vector3 currentPoint = ray.GetPoint(enter);
@@ -36,6 +42,8 @@ namespace TilesEditor
                 if (delta.magnitude < 100f)
                     gizmoRoot.target.position = gizmoRoot.objectStartPos + delta;
             }
+
+
         }
 
         public Plane GetDragPlane(Transform gizmoTransform, Vector3 center)
@@ -51,7 +59,26 @@ namespace TilesEditor
 
         public void OnHover()
         {
-            throw new System.NotImplementedException();
+            if (Input.GetMouseButtonDown(0))
+            {
+                gizmoRoot.action = OnDrag;
+                Plane dragPlane = GetDragPlane(transform, gizmoRoot.target.position);
+                Ray ray = cam.ScreenPointToRay(Input.mousePosition);
+                if (!dragPlane.Raycast(ray, out float enter))
+                {
+                    dragPlane = new Plane(-dragPlane.normal, dragPlane.distance);
+                    if (!dragPlane.Raycast(ray, out enter))
+                        return;
+                }
+                gizmoRoot.dragStartPos = ray.GetPoint(enter);
+                gizmoRoot.objectStartPos = gizmoRoot.target.position;
+
+            }
+            else if (!IsHovered())
+            {
+                gizmoRoot.EndDrag();
+            }
         }
+
     }
 }

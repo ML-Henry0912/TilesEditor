@@ -123,32 +123,7 @@ namespace TilesEditor
         // 狀態：Hover，檢查是否按下滑鼠進入拖曳
         void CheckMouseDown()
         {
-            if (Input.GetMouseButtonDown(0))
-            {
-                if (activeGizmo is PlaneGizmo)
-                {
-                    action = OnDragPlane;
-                    planeGizmo = (PlaneGizmo)activeGizmo;
-                    Plane dragPlane = planeGizmo.GetDragPlane(transform, target.position);
-                    Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-                    if (!dragPlane.Raycast(ray, out float enter))
-                    {
-                        dragPlane = new Plane(-dragPlane.normal, dragPlane.distance);
-                        if (!dragPlane.Raycast(ray, out enter))
-                            return;
-                    }
-                    dragStartPos = ray.GetPoint(enter);
-                    objectStartPos = target.position;
-                }
-                else if (activeGizmo is RotateGizmo)
-                {
 
-                }
-            }
-            else if (!TryHoverHandle())
-            {
-                action = CheckHover;
-            }
         }
 
         // 嘗試 hover 到 handle，並處理 hover 效果
@@ -174,24 +149,6 @@ namespace TilesEditor
 
 
         // 拖曳平面
-        void OnDragPlane()
-        {
-            if (Input.GetMouseButtonUp(0))
-            {
-                EndDrag();
-                return;
-            }
-
-            Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-            Plane dragPlane = planeGizmo.GetDragPlane(transform, target.position);
-            if (dragPlane.Raycast(ray, out float enter))
-            {
-                Vector3 currentPoint = ray.GetPoint(enter);
-                Vector3 delta = currentPoint - dragStartPos;
-                if (delta.magnitude < 100f)
-                    target.position = objectStartPos + delta;
-            }
-        }
 
         public void EndDrag()
         {
