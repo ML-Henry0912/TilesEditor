@@ -10,7 +10,7 @@ using UnityEngine;
 
 namespace TilesEditor
 {
-    public class AxisGizmo : GizmoBase
+    public class AxisGizmo : MonoBehaviour, iGizmo
     {
         public enum Axis { X, Y, Z }
         public Axis axis;
@@ -18,6 +18,9 @@ namespace TilesEditor
         [HideInInspector] public Vector3 WorldDirection;
 
         private bool isHovered = false;
+        protected TransformGizmo gizmo;
+        public Color baseColor;
+        protected MaterialPropertyBlock propertyBlock;
 
         public void Initialize(Axis axisType, Color color, TransformGizmo gizmo)
         {
@@ -32,7 +35,24 @@ namespace TilesEditor
                 case Axis.Z: WorldDirection = Vector3.forward; break;
             }
             this.gizmo = gizmo;
+        }
 
+        public void SetMaterialColor(Color color)
+        {
+            if (propertyBlock == null)
+                propertyBlock = new MaterialPropertyBlock();
+            color.a = 0.8f; // 預設 80% 透明度
+            propertyBlock.SetColor("_Color", color);
+            var renderer = GetComponent<MeshRenderer>();
+            if (renderer != null)
+            {
+                renderer.SetPropertyBlock(propertyBlock);
+            }
+        }
+
+        public void ResetColor()
+        {
+            SetMaterialColor(baseColor);
         }
 
         private void OnMouseEnter()
@@ -53,7 +73,7 @@ namespace TilesEditor
         }
 
         // 判斷此 handle 是否該顯示
-        public override bool ShouldBeActive()
+        public bool ShouldBeActive()
         {
             if (gizmo == null) return false;
             switch (axis)

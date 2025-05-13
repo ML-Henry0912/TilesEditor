@@ -10,12 +10,15 @@ using UnityEngine;
 
 namespace TilesEditor
 {
-    public class PlaneGizmo : GizmoBase
+    public class PlaneGizmo : MonoBehaviour, iGizmo
     {
         public enum PlaneType { XY, XZ, YZ }
         public PlaneType planeType;
 
         private bool isHovered = false;
+        protected TransformGizmo gizmo;
+        public Color baseColor;
+        protected MaterialPropertyBlock propertyBlock;
 
         public void Initialize(PlaneType type, Color color, TransformGizmo gizmo)
         {
@@ -23,7 +26,6 @@ namespace TilesEditor
             baseColor = color;
             SetMaterialColor(color);
             this.gizmo = gizmo;
-
         }
 
         public void SetInvisible(bool value)
@@ -35,7 +37,7 @@ namespace TilesEditor
                 ren.enabled = true;
         }
 
-        public override void SetMaterialColor(Color color)
+        public void SetMaterialColor(Color color)
         {
             if (propertyBlock == null)
                 propertyBlock = new MaterialPropertyBlock();
@@ -48,6 +50,11 @@ namespace TilesEditor
             {
                 renderer.SetPropertyBlock(propertyBlock);
             }
+        }
+
+        public void ResetColor()
+        {
+            SetMaterialColor(baseColor);
         }
 
         public Plane GetDragPlane(Transform gizmoRoot, Vector3 origin)
@@ -79,7 +86,7 @@ namespace TilesEditor
         }
 
         // 判斷此 handle 是否該顯示
-        public override bool ShouldBeActive()
+        public bool ShouldBeActive()
         {
             if (gizmo == null) return false;
             switch (planeType)

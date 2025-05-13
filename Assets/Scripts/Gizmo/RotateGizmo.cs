@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace TilesEditor
 {
-    public class RotateGizmo : GizmoBase
+    public class RotateGizmo : MonoBehaviour, iGizmo
     {
         public enum Axis { X, Y, Z }
         public Axis axis;
@@ -19,6 +19,9 @@ namespace TilesEditor
 
         Camera cam;
         float thickness;
+        protected TransformGizmo gizmo;
+        public Color baseColor;
+        protected MaterialPropertyBlock propertyBlock;
 
         public void Initialize(Axis axisType, Color color, TransformGizmo gizmo, float thickness)
         {
@@ -35,6 +38,24 @@ namespace TilesEditor
             this.gizmo = gizmo;
             this.cam = gizmo.cam;
             this.thickness = thickness;
+        }
+
+        public void SetMaterialColor(Color color)
+        {
+            if (propertyBlock == null)
+                propertyBlock = new MaterialPropertyBlock();
+            color.a = 0.8f; // 預設 80% 透明度
+            propertyBlock.SetColor("_Color", color);
+            var renderer = GetComponent<MeshRenderer>();
+            if (renderer != null)
+            {
+                renderer.SetPropertyBlock(propertyBlock);
+            }
+        }
+
+        public void ResetColor()
+        {
+            SetMaterialColor(baseColor);
         }
 
         /// <summary>
@@ -61,7 +82,7 @@ namespace TilesEditor
         }
 
         // 判斷此 handle 是否該顯示
-        public override bool ShouldBeActive()
+        public bool ShouldBeActive()
         {
             if (gizmo == null) return false;
             switch (axis)

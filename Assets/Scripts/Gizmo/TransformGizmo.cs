@@ -40,7 +40,7 @@ namespace TilesEditor
         public bool rotateY = true;
         public bool rotateZ = true;
 
-        private GizmoBase[] allGizmos = new GizmoBase[9];
+        private iGizmo[] allGizmos = new iGizmo[9];
         AxisGizmo xHandle { get => (AxisGizmo)allGizmos[0]; set => allGizmos[0] = value; }
         AxisGizmo yHandle { get => (AxisGizmo)allGizmos[1]; set => allGizmos[1] = value; }
         AxisGizmo zHandle { get => (AxisGizmo)allGizmos[2]; set => allGizmos[2] = value; }
@@ -111,7 +111,7 @@ namespace TilesEditor
         {
             for (int _i = 0; _i < allGizmos.Length; _i++)
             {
-                GizmoBase gizmo = allGizmos[_i];
+                iGizmo gizmo = allGizmos[_i];
                 gizmo?.gameObject?.SetActive(gizmo?.ShouldBeActive() ?? false);
             }
         }
