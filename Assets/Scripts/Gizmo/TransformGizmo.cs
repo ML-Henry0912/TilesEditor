@@ -26,15 +26,8 @@ namespace TilesEditor
         public Transform target;// { get; private set; }
         public Camera cam;
 
-        [Header("Translate Axis Enable")]
-        public bool translateX = true;
-        public bool translateY = true;
-        public bool translateZ = true;
-
-        [Header("Rotate Axis Enable")]
-        public bool rotateX = true;
-        public bool rotateY = true;
-        public bool rotateZ = true;
+        [Header("Gizmo Enable")]
+        public bool[] gizmoEnable = new bool[9] { true, true, true, true, true, true, true, true, true };
 
         private iGizmo[] allGizmos = new iGizmo[9];
 

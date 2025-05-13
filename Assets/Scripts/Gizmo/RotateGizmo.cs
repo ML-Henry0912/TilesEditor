@@ -33,18 +33,6 @@ namespace TilesEditor
             gameObject.SetActive(ShouldBeActive());
         }
 
-        // 判斷此 handle 是否該顯示
-        public bool ShouldBeActive()
-        {
-            if (gizmo == null) return false;
-            switch (type)
-            {
-                case GizmoType.ROT_X: return gizmo.rotateX;
-                case GizmoType.ROT_Y: return gizmo.rotateY;
-                case GizmoType.ROT_Z: return gizmo.rotateZ;
-                default: return false;
-            }
-        }
 
         public void OnDrag()
         {

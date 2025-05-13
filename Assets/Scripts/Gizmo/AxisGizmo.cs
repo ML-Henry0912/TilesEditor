@@ -33,18 +33,6 @@ namespace TilesEditor
             gameObject.SetActive(ShouldBeActive());
         }
 
-        public bool ShouldBeActive()
-        {
-            if (gizmo == null) return false;
-            switch (type)
-            {
-                case GizmoType.X: return gizmo.translateX;
-                case GizmoType.Y: return gizmo.translateY;
-                case GizmoType.Z: return gizmo.translateZ;
-                default: return false;
-            }
-        }
-
         public void OnDrag()
         {
             if (gizmo == null || gizmo.target == null || cam == null) return;

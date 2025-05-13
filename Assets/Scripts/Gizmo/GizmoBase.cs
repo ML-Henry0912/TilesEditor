@@ -36,6 +36,12 @@ namespace TilesEditor
             }
         }
 
+        public bool ShouldBeActive()
+        {
+            if (gizmo == null) return false;
+            return gizmo.gizmoEnable[(int)type];
+        }
+
         public bool IsHovered()
         {
             if (isHovered && ((iGizmo)this).ShouldBeActive())

@@ -24,18 +24,6 @@ namespace TilesEditor
         }
 
 
-        public bool ShouldBeActive()
-        {
-            if (gizmo == null) return false;
-            switch (type)
-            {
-                case GizmoType.XY: return gizmo.translateX && gizmo.translateY;
-                case GizmoType.XZ: return gizmo.translateX && gizmo.translateZ;
-                case GizmoType.YZ: return gizmo.translateY && gizmo.translateZ;
-                default: return false;
-            }
-        }
-
         public void OnDrag()
         {
             if (gizmo == null || gizmo.target == null || cam == null) return;
