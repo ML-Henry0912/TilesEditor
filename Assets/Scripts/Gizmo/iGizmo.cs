@@ -32,16 +32,4 @@ namespace TilesEditor
     }
 
 
-    public interface iGizmoBase
-    {
-        //void Initialize(iGizmo.GizmoType type, TransformGizmo gizmo);
-        void SetMaterialColor(Color color);
-        //void ResetColor();
-        //bool ShouldBeActive();
-        //bool IsHovered();
-        //void SetInvisible(bool value);
-    }
-
-
-
 }

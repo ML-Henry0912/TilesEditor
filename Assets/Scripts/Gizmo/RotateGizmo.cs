@@ -33,26 +33,6 @@ namespace TilesEditor
             gameObject.SetActive(ShouldBeActive());
         }
 
-
-        public void ResetColor()
-        {
-            SetMaterialColor(baseColor);
-        }
-
-        private void OnMouseEnter()
-        {
-            isHovered = true;
-            SetMaterialColor(Color.yellow);
-        }
-
-        private void OnMouseExit()
-        {
-            isHovered = false;
-            SetMaterialColor(baseColor);
-        }
-
-
-
         // 判斷此 handle 是否該顯示
         public bool ShouldBeActive()
         {
@@ -63,15 +43,6 @@ namespace TilesEditor
                 case GizmoType.ROT_Y: return gizmo.rotateY;
                 case GizmoType.ROT_Z: return gizmo.rotateZ;
                 default: return false;
-            }
-        }
-
-        public void SetInvisible(bool value)
-        {
-            var renderer = GetComponent<MeshRenderer>();
-            if (renderer != null)
-            {
-                renderer.enabled = !value;
             }
         }
 
@@ -94,6 +65,7 @@ namespace TilesEditor
                 gizmo.target.rotation = gizmo.objectStartRot * Quaternion.AngleAxis(angle, WorldAxis);
             }
         }
+
     }
 
 

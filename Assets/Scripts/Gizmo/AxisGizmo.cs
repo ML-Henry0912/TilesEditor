@@ -33,26 +33,6 @@ namespace TilesEditor
             gameObject.SetActive(ShouldBeActive());
         }
 
-
-        public void ResetColor()
-        {
-            SetMaterialColor(baseColor);
-        }
-
-        private void OnMouseEnter()
-        {
-            isHovered = true;
-            SetMaterialColor(Color.yellow);
-        }
-
-        private void OnMouseExit()
-        {
-            isHovered = false;
-            SetMaterialColor(baseColor);
-        }
-
-
-        // 判斷此 handle 是否該顯示
         public bool ShouldBeActive()
         {
             if (gizmo == null) return false;
@@ -62,15 +42,6 @@ namespace TilesEditor
                 case GizmoType.Y: return gizmo.translateY;
                 case GizmoType.Z: return gizmo.translateZ;
                 default: return false;
-            }
-        }
-
-        public void SetInvisible(bool value)
-        {
-            var renderer = GetComponent<MeshRenderer>();
-            if (renderer != null)
-            {
-                renderer.enabled = !value;
             }
         }
 

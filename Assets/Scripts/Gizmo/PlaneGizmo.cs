@@ -23,37 +23,6 @@ namespace TilesEditor
             gameObject.SetActive(ShouldBeActive());
         }
 
-        public void SetInvisible(bool value)
-        {
-            var ren = GetComponent<MeshRenderer>();
-            if (value)
-                ren.enabled = false;
-            else
-                ren.enabled = true;
-        }
-
-
-        public void ResetColor()
-        {
-            SetMaterialColor(baseColor);
-        }
-
-        private void OnMouseEnter()
-        {
-            isHovered = true;
-            SetMaterialColor(Color.yellow);
-        }
-
-        private void OnMouseExit()
-        {
-            isHovered = false;
-            SetMaterialColor(baseColor);
-        }
-
-        public bool IsHovered()
-        {
-            return isHovered;
-        }
 
         public bool ShouldBeActive()
         {
