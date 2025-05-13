@@ -38,6 +38,8 @@ namespace TilesEditor
                 case GizmoType.Z: WorldDirection = Vector3.forward; break;
             }
             this.gizmo = gizmo;
+
+            gameObject.SetActive(ShouldBeActive());
         }
 
         public void SetMaterialColor(Color color)

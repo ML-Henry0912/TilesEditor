@@ -75,9 +75,11 @@ namespace TilesEditor
         public void Initialize(Transform target, Camera cam, GizmoMaterials materials)
         {
             this.target = target;
+            this.cam = cam;
+            this.materials = materials;
 
             // 檢查是否已經初始化過相同的目標
-            if (initialized && this.cam == cam && this.materials == materials)
+            if (initialized)
             {
                 for (int _i = 0; _i < allGizmos.Length; _i++)
                 {
@@ -87,11 +89,7 @@ namespace TilesEditor
             else
             {
                 CreateAllHandles();
-
             }
-
-            this.cam = cam;
-            this.materials = materials;
 
             initialized = true;
             action = CheckHover;
@@ -343,6 +341,7 @@ namespace TilesEditor
 
         void CreateAllHandles()
         {
+            Debug.Log($"CreateAllHandles");
             allGizmos[0] = CreateAxisHandle("X_Handle", new Vector3(AXIS_HANDLE_OFFSET, 0.0f, 0.0f), Quaternion.Euler(0.0f, 0.0f, -90.0f), Color.red, GizmoType.X);
             allGizmos[1] = CreateAxisHandle("Y_Handle", new Vector3(0.0f, AXIS_HANDLE_OFFSET, 0.0f), Quaternion.identity, Color.green, GizmoType.Y);
             allGizmos[2] = CreateAxisHandle("Z_Handle", new Vector3(0.0f, 0.0f, AXIS_HANDLE_OFFSET), Quaternion.Euler(90.0f, 0.0f, 0.0f), Color.blue, GizmoType.Z);

@@ -40,6 +40,7 @@ namespace TilesEditor
             }
             this.gizmo = gizmo;
             this.cam = gizmo.cam;
+            gameObject.SetActive(ShouldBeActive());
         }
 
         public void SetMaterialColor(Color color)

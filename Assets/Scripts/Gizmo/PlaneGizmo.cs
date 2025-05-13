@@ -28,6 +28,7 @@ namespace TilesEditor
             SetMaterialColor(color);
             this.gizmo = gizmo;
             this.cam = gizmo.cam;
+            gameObject.SetActive(ShouldBeActive());
         }
 
         public void SetInvisible(bool value)
