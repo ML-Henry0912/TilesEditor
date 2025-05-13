@@ -55,6 +55,7 @@ namespace TilesEditor
         public Action action;
 
         bool initialized = false;
+        bool isHidden = false;
 
         public Color[] gizmoColors = {
             Color.red,
@@ -80,6 +81,7 @@ namespace TilesEditor
                 for (int _i = 0; _i < allGizmos.Length; _i++)
                 {
                     allGizmos[_i].Initialize((GizmoType)_i, this);
+                    allGizmos[_i].SetInvisible(false);
                 }
             }
             else
@@ -88,12 +90,26 @@ namespace TilesEditor
             }
 
             initialized = true;
+            isHidden = false;
             action = CheckHover;
+        }
+
+        public void HideAllGizmos()
+        {
+            if (!initialized) return;
+            isHidden = true;
+            foreach (var gizmo in allGizmos)
+            {
+                if (gizmo != null)
+                {
+                    gizmo.SetInvisible(true);
+                }
+            }
         }
 
         void Update()
         {
-            if (!initialized || target == null || cam == null) return;
+            if (!initialized || target == null || cam == null || isHidden) return;
 
             transform.position = target.position;
             transform.rotation = target.rotation;

@@ -30,7 +30,7 @@ namespace TilesEditor
 
             gizmo = gizmoRoot.AddComponent<TileGizmo>();
             gizmo.InitializeTile(transform, cam, materials);
-
+            gizmo.HideAllGizmos();
 
             // 將所有 tiles 設定隨機位置，z軸為0
             foreach (var tile in tiles)
