@@ -56,5 +56,6 @@ namespace TilesEditor
             if (delta.magnitude < 100f)
                 gizmo.target.position = gizmo.objectStartPos + delta;
         }
+
     }
 }

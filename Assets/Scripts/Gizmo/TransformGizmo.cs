@@ -10,8 +10,6 @@
 // =============================================
 using System;
 using UnityEngine;
-using System.Collections.Generic;
-using static TilesEditor.PlaneGizmo;
 using static TilesEditor.iGizmo;
 
 namespace TilesEditor
@@ -22,10 +20,8 @@ namespace TilesEditor
         const float AXIS_HANDLE_OFFSET = 1.25f;
         const float PLANE_HANDLE_OFFSET = 0.55f;
         const float PLANE_HANDLE_SIZE = 0.75f;
-        const float ROTATE_HANDLE_SCALE = 1.2f;
         const float AXIS_HANDLE_SCALE = 0.1f;
         const float AXIS_HANDLE_LENGTH = 0.6f;
-        const float AXIS_HANDLE_THICKNESS = 16.0f;
 
         public Transform target;// { get; private set; }
         public Camera cam;
