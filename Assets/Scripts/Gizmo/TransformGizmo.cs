@@ -110,12 +110,13 @@ namespace TilesEditor
             action?.Invoke();
         }
 
+
         // 狀態：Idle，檢查是否 hover 到 handle
         void CheckHover()
         {
             if (TryHoverHandle())
             {
-                action = CheckMouseDown;
+                //action = CheckMouseDown;
             }
         }
 
@@ -124,15 +125,7 @@ namespace TilesEditor
         {
             if (Input.GetMouseButtonDown(0))
             {
-                if (activeGizmo is AxisGizmo)
-                {
-                    action = OnDragAxis;
-                    axisGizmo = (AxisGizmo)activeGizmo;
-                    Vector3 axisDir = transform.TransformDirection(axisGizmo.WorldDirection).normalized;
-                    dragStartPos = GetClosestPointOnAxis(cam.ScreenPointToRay(Input.mousePosition), target.position, axisDir);
-                    objectStartPos = target.position;
-                }
-                else if (activeGizmo is PlaneGizmo)
+                if (activeGizmo is PlaneGizmo)
                 {
                     action = OnDragPlane;
                     planeGizmo = (PlaneGizmo)activeGizmo;
@@ -178,6 +171,8 @@ namespace TilesEditor
 
                 if (gizmo != null && gizmo.IsHovered())
                 {
+                    action = gizmo.OnHover;
+
                     activeGizmo = gizmo;
                     hoverFound = true;
                 }
@@ -185,22 +180,6 @@ namespace TilesEditor
             return hoverFound;
         }
 
-        // 拖曳軸
-        void OnDragAxis()
-        {
-            if (Input.GetMouseButtonUp(0))
-            {
-                EndDrag();
-                return;
-            }
-
-            Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-            Vector3 axisDir = transform.TransformDirection(axisGizmo.WorldDirection).normalized;
-            Vector3 current = GetClosestPointOnAxis(ray, objectStartPos, axisDir);
-            Vector3 delta = Vector3.Project(current - dragStartPos, axisDir);
-            if (delta.magnitude < 100f)
-                target.position = objectStartPos + delta;
-        }
 
         // 拖曳平面
         void OnDragPlane()
@@ -248,7 +227,7 @@ namespace TilesEditor
             }
         }
 
-        void EndDrag()
+        public void EndDrag()
         {
             activeGizmo?.ResetColor();
             activeGizmo = null;
@@ -259,29 +238,6 @@ namespace TilesEditor
             action = CheckHover;
         }
 
-
-        public Vector3 GetClosestPointOnAxis(Ray ray, Vector3 axisOrigin, Vector3 axisDir)
-        {
-            Vector3 p1 = ray.origin;
-            Vector3 d1 = ray.direction;
-            Vector3 p2 = axisOrigin;
-            Vector3 d2 = axisDir;
-
-            float a = Vector3.Dot(d1, d1);
-            float b = Vector3.Dot(d1, d2);
-            float e = Vector3.Dot(d2, d2);
-            float d = a * e - b * b;
-
-            if (Mathf.Abs(d) < 0.0001f)
-                return axisOrigin;
-
-            Vector3 r = p1 - p2;
-            float c = Vector3.Dot(d1, r);
-            float f = Vector3.Dot(d2, r);
-            float s = (b * f - c * e) / d;
-
-            return p1 + d1 * s;
-        }
 
         void CreateAllHandles()
         {

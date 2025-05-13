@@ -17,7 +17,7 @@ namespace TilesEditor
 
         public void Initialize(GizmoType type, TransformGizmo gizmo)
         {
-            this.gizmo = gizmo;
+            this.theGizmo = gizmo;
             this.type = type;
             baseColor = gizmo.gizmoColors[(int)type];
             SetMaterialColor(baseColor);
@@ -36,13 +36,18 @@ namespace TilesEditor
 
         public void OnDrag()
         {
-            if (gizmo == null || gizmo.target == null || cam == null) return;
+            if (Input.GetMouseButtonUp(0))
+            {
+                theGizmo.EndDrag();
+                return;
+            }
+
             Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-            if (gizmo.rotationPlane.Raycast(ray, out float enter))
+            if (theGizmo.rotationPlane.Raycast(ray, out float enter))
             {
                 Vector3 currentPoint = ray.GetPoint(enter);
-                Vector3 startDir = (gizmo.rotateStartPoint - gizmo.target.position).normalized;
-                Vector3 currentDir = (currentPoint - gizmo.target.position).normalized;
+                Vector3 startDir = (theGizmo.rotateStartPoint - theGizmo.target.position).normalized;
+                Vector3 currentDir = (currentPoint - theGizmo.target.position).normalized;
 
                 Quaternion deltaRotation = Quaternion.FromToRotation(startDir, currentDir);
                 deltaRotation.ToAngleAxis(out float angle, out Vector3 axis);
@@ -50,10 +55,31 @@ namespace TilesEditor
                 if (Vector3.Dot(axis, WorldAxis) < 0f)
                     angle = -angle;
 
-                gizmo.target.rotation = gizmo.objectStartRot * Quaternion.AngleAxis(angle, WorldAxis);
+                theGizmo.target.rotation = theGizmo.objectStartRot * Quaternion.AngleAxis(angle, WorldAxis);
             }
         }
 
+
+        public void OnHover()
+        {
+            if (Input.GetMouseButtonDown(0))
+            {
+                theGizmo.action = OnDrag;
+
+                theGizmo.rotationPlane = new Plane(WorldAxis, theGizmo.target.position);
+                Ray ray = cam.ScreenPointToRay(Input.mousePosition);
+                if (theGizmo.rotationPlane.Raycast(ray, out float enter))
+                {
+                    theGizmo.rotateStartPoint = ray.GetPoint(enter);
+                    theGizmo.objectStartRot = theGizmo.target.rotation;
+                }
+
+            }
+            else if (!IsHovered())
+            {
+                theGizmo.EndDrag();
+            }
+        }
     }
 
 

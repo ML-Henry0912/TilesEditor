@@ -20,7 +20,7 @@ namespace TilesEditor
         void OnGUI()
         {
             float w = Screen.width * 0.4f;
-            float h = Screen.height * 0.12f;
+            float h = Screen.height * 0.32f;
             float x = (Screen.width - w) / 2f;
             float y = Screen.height * 0.1f;
             GUIStyle style = new GUIStyle(GUI.skin.button);

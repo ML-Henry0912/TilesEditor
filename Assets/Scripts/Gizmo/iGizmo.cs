@@ -28,6 +28,7 @@ namespace TilesEditor
         bool ShouldBeActive();
         bool IsHovered();
         void SetInvisible(bool value);
+        void OnHover();
         void OnDrag();
     }
 

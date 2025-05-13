@@ -18,7 +18,7 @@ namespace TilesEditor
             this.type = type;
             baseColor = gizmo.gizmoColors[(int)type];
             SetMaterialColor(baseColor);
-            this.gizmo = gizmo;
+            this.theGizmo = gizmo;
             this.cam = gizmo.cam;
             gameObject.SetActive(ShouldBeActive());
         }
@@ -26,15 +26,15 @@ namespace TilesEditor
 
         public void OnDrag()
         {
-            if (gizmo == null || gizmo.target == null || cam == null) return;
+            if (theGizmo == null || theGizmo.target == null || cam == null) return;
             Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-            Plane dragPlane = GetDragPlane(gizmo.transform, gizmo.target.position);
+            Plane dragPlane = GetDragPlane(theGizmo.transform, theGizmo.target.position);
             if (dragPlane.Raycast(ray, out float enter))
             {
                 Vector3 currentPoint = ray.GetPoint(enter);
-                Vector3 delta = currentPoint - gizmo.dragStartPos;
+                Vector3 delta = currentPoint - theGizmo.dragStartPos;
                 if (delta.magnitude < 100f)
-                    gizmo.target.position = gizmo.objectStartPos + delta;
+                    theGizmo.target.position = theGizmo.objectStartPos + delta;
             }
         }
 
@@ -47,6 +47,11 @@ namespace TilesEditor
                 case GizmoType.YZ: return new Plane(gizmoTransform.right, center);
                 default: return new Plane(Vector3.up, center);
             }
+        }
+
+        public void OnHover()
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

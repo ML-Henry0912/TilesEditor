@@ -13,7 +13,9 @@ namespace TilesEditor
 {
     public class AxisGizmo : GizmoBase, iGizmo
     {
-        [HideInInspector] public Vector3 WorldDirection;
+        private Vector3 dragStartPos;
+        private Vector3 objectStartPos;
+        private Transform target;
 
         public void Initialize(GizmoType type, TransformGizmo gizmo)
         {
@@ -21,29 +23,65 @@ namespace TilesEditor
             baseColor = gizmo.gizmoColors[(int)type];
             SetMaterialColor(baseColor);
             cam = gizmo.cam;
+            target = gizmo.target;
 
-            switch (this.type)
-            {
-                case GizmoType.X: WorldDirection = Vector3.right; break;
-                case GizmoType.Y: WorldDirection = Vector3.up; break;
-                case GizmoType.Z: WorldDirection = Vector3.forward; break;
-            }
-            this.gizmo = gizmo;
+            theGizmo = gizmo;
 
             gameObject.SetActive(ShouldBeActive());
         }
 
         public void OnDrag()
         {
-            if (gizmo == null || gizmo.target == null || cam == null) return;
+            if (Input.GetMouseButtonUp(0))
+            {
+                theGizmo.EndDrag();
+                return;
+            }
 
             Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-            Vector3 axisDir = gizmo.transform.TransformDirection(WorldDirection).normalized;
-            Vector3 current = gizmo.GetClosestPointOnAxis(ray, gizmo.target.position, axisDir);
-            Vector3 delta = Vector3.Project(current - gizmo.dragStartPos, axisDir);
+            Vector3 axisDir = transform.TransformDirection(Vector3.up).normalized;
+            Vector3 current = GetClosestPointOnAxis(ray, objectStartPos, axisDir);
+            Vector3 delta = Vector3.Project(current - dragStartPos, axisDir);
             if (delta.magnitude < 100f)
-                gizmo.target.position = gizmo.objectStartPos + delta;
+                target.position = objectStartPos + delta;
         }
 
+        public void OnHover()
+        {
+            if (Input.GetMouseButtonDown(0))
+            {
+                theGizmo.action = OnDrag;
+                Vector3 axisDir = transform.TransformDirection(Vector3.up).normalized;
+                dragStartPos = GetClosestPointOnAxis(cam.ScreenPointToRay(Input.mousePosition), target.position, axisDir);
+                objectStartPos = target.position;
+            }
+            else if (!IsHovered())
+            {
+                theGizmo.EndDrag();
+            }
+        }
+
+        public static Vector3 GetClosestPointOnAxis(Ray ray, Vector3 axisOrigin, Vector3 axisDir)
+        {
+            Vector3 p1 = ray.origin;
+            Vector3 d1 = ray.direction;
+            Vector3 p2 = axisOrigin;
+            Vector3 d2 = axisDir;
+
+            float a = Vector3.Dot(d1, d1);
+            float b = Vector3.Dot(d1, d2);
+            float e = Vector3.Dot(d2, d2);
+            float d = a * e - b * b;
+
+            if (Mathf.Abs(d) < 0.0001f)
+                return axisOrigin;
+
+            Vector3 r = p1 - p2;
+            float c = Vector3.Dot(d1, r);
+            float f = Vector3.Dot(d2, r);
+            float s = (b * f - c * e) / d;
+
+            return p1 + d1 * s;
+        }
     }
 }
