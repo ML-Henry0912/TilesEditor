@@ -89,13 +89,8 @@ namespace TilesEditor
 
         private Material GetAxisMaterial(int index)
         {
-            switch (index)
-            {
-                case 0: return materials.xRed;
-                case 1: return materials.yGreen;
-                case 2: return materials.zBlue;
-                default: return null;
-            }
+            return materials.materials[index];
+
         }
 
         private Color GetPlaneColor(int index)
@@ -111,13 +106,8 @@ namespace TilesEditor
 
         private Material GetPlaneMaterial(int index)
         {
-            switch (index)
-            {
-                case 3: return materials.xyYellow;
-                case 4: return materials.xzMagenta;
-                case 5: return materials.yzCyan;
-                default: return null;
-            }
+            return materials.materials[index];
+
         }
 
         void Update()
@@ -166,7 +156,7 @@ namespace TilesEditor
                 {
                     gizmo.SetMaterialColor(Color.yellow);
                     var mr = (gizmo as MonoBehaviour)?.GetComponent<MeshRenderer>();
-                    if (mr != null) mr.sharedMaterial = materials.hoverYellow;
+                    if (mr != null) mr.sharedMaterial = materials.materials[iGizmo.GIZMO_HOVER];
                     hoverFound = true;
                 }
             }
@@ -384,9 +374,9 @@ namespace TilesEditor
             axisGizmo.Initialize(axis, color, this);
             // 指定材質
             var renderer = go.GetComponent<MeshRenderer>();
-            if (axis == AxisGizmo.Axis.X) renderer.sharedMaterial = materials.xRed;
-            else if (axis == AxisGizmo.Axis.Y) renderer.sharedMaterial = materials.yGreen;
-            else if (axis == AxisGizmo.Axis.Z) renderer.sharedMaterial = materials.zBlue;
+            if (axis == AxisGizmo.Axis.X) renderer.sharedMaterial = materials.materials[iGizmo.GIZMO_X];
+            else if (axis == AxisGizmo.Axis.Y) renderer.sharedMaterial = materials.materials[iGizmo.GIZMO_Y];
+            else if (axis == AxisGizmo.Axis.Z) renderer.sharedMaterial = materials.materials[iGizmo.GIZMO_Z];
             return axisGizmo;
         }
 
@@ -405,9 +395,9 @@ namespace TilesEditor
             planeGizmo.Initialize(type, color, this);
             // 指定材質
             var renderer = go.GetComponent<MeshRenderer>();
-            if (type == PlaneType.XY) renderer.sharedMaterial = materials.xyYellow;
-            else if (type == PlaneType.XZ) renderer.sharedMaterial = materials.xzMagenta;
-            else if (type == PlaneType.YZ) renderer.sharedMaterial = materials.yzCyan;
+            if (type == PlaneType.XY) renderer.sharedMaterial = materials.materials[iGizmo.GIZMO_XY];
+            else if (type == PlaneType.XZ) renderer.sharedMaterial = materials.materials[iGizmo.GIZMO_XZ];
+            else if (type == PlaneType.YZ) renderer.sharedMaterial = materials.materials[iGizmo.GIZMO_YZ];
             return planeGizmo;
         }
 
@@ -424,9 +414,9 @@ namespace TilesEditor
             var gizmo = go.AddComponent<RotateGizmo>();
             gizmo.Initialize(axis, color, this, AXIS_HANDLE_THICKNESS);
             // 指定材質
-            if (axis == RotateGizmo.Axis.X) mr.sharedMaterial = materials.xRed;
-            else if (axis == RotateGizmo.Axis.Y) mr.sharedMaterial = materials.yGreen;
-            else if (axis == RotateGizmo.Axis.Z) mr.sharedMaterial = materials.zBlue;
+            if (axis == RotateGizmo.Axis.X) mr.sharedMaterial = materials.materials[iGizmo.GIZMO_X];
+            else if (axis == RotateGizmo.Axis.Y) mr.sharedMaterial = materials.materials[iGizmo.GIZMO_Y];
+            else if (axis == RotateGizmo.Axis.Z) mr.sharedMaterial = materials.materials[iGizmo.GIZMO_Z];
             return gizmo;
         }
 

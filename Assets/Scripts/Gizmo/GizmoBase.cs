@@ -12,6 +12,14 @@ namespace TilesEditor
     // =============================================
     public interface iGizmo
     {
+        public const int GIZMO_X = 0;
+        public const int GIZMO_Y = 1;
+        public const int GIZMO_Z = 2;
+        public const int GIZMO_XY = 3;
+        public const int GIZMO_XZ = 4;
+        public const int GIZMO_YZ = 5;
+        public const int GIZMO_HOVER = 6;
+
         void SetMaterialColor(Color color);
         void ResetColor();
         bool ShouldBeActive();
