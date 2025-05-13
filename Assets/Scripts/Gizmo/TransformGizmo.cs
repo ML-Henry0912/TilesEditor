@@ -497,32 +497,22 @@ namespace TilesEditor
 
         PlaneGizmo CreatePlaneHandle(string name, Vector3 localPos, Quaternion localRot, Color color, PlaneGizmo.PlaneType type, float size)
         {
-            GameObject go = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            GameObject go = GameObject.CreatePrimitive(PrimitiveType.Cube);
             go.name = name;
             go.transform.SetParent(transform);
             go.transform.localPosition = localPos;
             go.transform.localRotation = localRot;
-            go.transform.localScale = Vector3.one * size;
+
+            // 根據平面類型設定正確的 scale
+            go.transform.localScale = new Vector3(size, size, 0.05f); ;
+
             var planeGizmo = go.AddComponent<PlaneGizmo>();
-            planeGizmo.Initialize(type, color, this, size);
+            planeGizmo.Initialize(type, color, this);
             // 指定材質
             var renderer = go.GetComponent<MeshRenderer>();
             if (type == PlaneGizmo.PlaneType.XY) renderer.sharedMaterial = materials.xyYellow;
             else if (type == PlaneGizmo.PlaneType.XZ) renderer.sharedMaterial = materials.xzMagenta;
             else if (type == PlaneGizmo.PlaneType.YZ) renderer.sharedMaterial = materials.yzCyan;
-            // 產生反面
-            GameObject back = GameObject.CreatePrimitive(PrimitiveType.Quad);
-            back.name = name + "_Back";
-            back.transform.SetParent(go.transform);
-            back.transform.localPosition = Vector3.zero;
-            back.transform.localRotation = Quaternion.Euler(0, 180, 0);
-            back.transform.localScale = Vector3.one;
-            var backCollider = back.GetComponent<Collider>();
-            if (backCollider != null) DestroyImmediate(backCollider);
-            var backRenderer = back.GetComponent<MeshRenderer>();
-            if (type == PlaneGizmo.PlaneType.XY) backRenderer.sharedMaterial = materials.xyYellow;
-            else if (type == PlaneGizmo.PlaneType.XZ) backRenderer.sharedMaterial = materials.xzMagenta;
-            else if (type == PlaneGizmo.PlaneType.YZ) backRenderer.sharedMaterial = materials.yzCyan;
             return planeGizmo;
         }
 
