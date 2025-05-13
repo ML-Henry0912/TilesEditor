@@ -124,7 +124,41 @@ namespace TilesEditor
         {
             if (Input.GetMouseButtonDown(0))
             {
-                action = CheckDrag;
+                if (activeGizmo is AxisGizmo)
+                {
+                    action = OnDragAxis;
+                    axisGizmo = (AxisGizmo)activeGizmo;
+                    Vector3 axisDir = transform.TransformDirection(axisGizmo.WorldDirection).normalized;
+                    dragStartPos = GetClosestPointOnAxis(cam.ScreenPointToRay(Input.mousePosition), target.position, axisDir);
+                    objectStartPos = target.position;
+                }
+                else if (activeGizmo is PlaneGizmo)
+                {
+                    action = OnDragPlane;
+                    planeGizmo = (PlaneGizmo)activeGizmo;
+                    Plane dragPlane = planeGizmo.GetDragPlane(transform, target.position);
+                    Ray ray = cam.ScreenPointToRay(Input.mousePosition);
+                    if (!dragPlane.Raycast(ray, out float enter))
+                    {
+                        dragPlane = new Plane(-dragPlane.normal, dragPlane.distance);
+                        if (!dragPlane.Raycast(ray, out enter))
+                            return;
+                    }
+                    dragStartPos = ray.GetPoint(enter);
+                    objectStartPos = target.position;
+                }
+                else if (activeGizmo is RotateGizmo)
+                {
+                    action = OnDragRotate;
+                    rotateGizmo = (RotateGizmo)activeGizmo;
+                    rotationPlane = new Plane(rotateGizmo.WorldAxis, target.position);
+                    Ray ray = cam.ScreenPointToRay(Input.mousePosition);
+                    if (rotationPlane.Raycast(ray, out float enter))
+                    {
+                        rotateStartPoint = ray.GetPoint(enter);
+                        objectStartRot = target.rotation;
+                    }
+                }
             }
             else if (!TryHoverHandle())
             {
@@ -136,65 +170,19 @@ namespace TilesEditor
         bool TryHoverHandle()
         {
             bool hoverFound = false;
+            activeGizmo = null;
             foreach (var gizmo in allGizmos)
             {
-                //gizmo.ResetColor();
                 if (hoverFound)
                     continue;
 
-                if (gizmo.IsHovered())
+                if (gizmo != null && gizmo.IsHovered())
                 {
+                    activeGizmo = gizmo;
                     hoverFound = true;
                 }
             }
             return hoverFound;
-        }
-
-        void CheckDrag()
-        {
-            Vector3 center = target.position;
-            foreach (var gizmo in allGizmos)
-            {
-                if (gizmo == null || !gizmo.IsHovered())
-                    continue;
-
-                activeGizmo = gizmo;
-                if (gizmo is RotateGizmo rotateGizmo)
-                {
-                    action = OnDragRotate;
-                    rotationPlane = new Plane(rotateGizmo.WorldAxis, center);
-                    Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-                    if (rotationPlane.Raycast(ray, out float enter))
-                    {
-                        rotateStartPoint = ray.GetPoint(enter);
-                        objectStartRot = target.rotation;
-                        return;
-                    }
-                }
-                else if (gizmo is AxisGizmo axisGizmo)
-                {
-                    action = OnDragAxis;
-                    Vector3 axisDir = transform.TransformDirection(axisGizmo.WorldDirection).normalized;
-                    dragStartPos = GetClosestPointOnAxis(cam.ScreenPointToRay(Input.mousePosition), target.position, axisDir);
-                    objectStartPos = target.position;
-                    return;
-                }
-                else if (gizmo is PlaneGizmo planeGizmo)
-                {
-                    action = OnDragPlane;
-                    Plane dragPlane = planeGizmo.GetDragPlane(transform, target.position);
-                    Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-                    if (!dragPlane.Raycast(ray, out float enter))
-                    {
-                        dragPlane = new Plane(-dragPlane.normal, dragPlane.distance);
-                        if (!dragPlane.Raycast(ray, out enter))
-                            return;
-                    }
-                    dragStartPos = ray.GetPoint(enter);
-                    objectStartPos = target.position;
-                    return;
-                }
-            }
         }
 
         // 拖曳軸
@@ -207,7 +195,7 @@ namespace TilesEditor
             }
 
             Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-            Vector3 axisDir = transform.TransformDirection(((AxisGizmo)activeGizmo).WorldDirection).normalized;
+            Vector3 axisDir = transform.TransformDirection(axisGizmo.WorldDirection).normalized;
             Vector3 current = GetClosestPointOnAxis(ray, objectStartPos, axisDir);
             Vector3 delta = Vector3.Project(current - dragStartPos, axisDir);
             if (delta.magnitude < 100f)
@@ -223,11 +211,8 @@ namespace TilesEditor
                 return;
             }
 
-            if (activeGizmo == null)
-                return;
-
             Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-            Plane dragPlane = ((PlaneGizmo)activeGizmo).GetDragPlane(transform, target.position);
+            Plane dragPlane = planeGizmo.GetDragPlane(transform, target.position);
             if (dragPlane.Raycast(ray, out float enter))
             {
                 Vector3 currentPoint = ray.GetPoint(enter);
@@ -256,10 +241,10 @@ namespace TilesEditor
                 Quaternion deltaRotation = Quaternion.FromToRotation(startDir, currentDir);
                 deltaRotation.ToAngleAxis(out float angle, out Vector3 axis);
 
-                if (Vector3.Dot(axis, ((RotateGizmo)activeGizmo).WorldAxis) < 0f)
+                if (Vector3.Dot(axis, rotateGizmo.WorldAxis) < 0f)
                     angle = -angle;
 
-                target.rotation = objectStartRot * Quaternion.AngleAxis(angle, ((RotateGizmo)activeGizmo).WorldAxis);
+                target.rotation = objectStartRot * Quaternion.AngleAxis(angle, rotateGizmo.WorldAxis);
             }
         }
 
@@ -267,6 +252,10 @@ namespace TilesEditor
         {
             activeGizmo?.ResetColor();
             activeGizmo = null;
+            axisGizmo = null;
+            planeGizmo = null;
+            rotateGizmo = null;
+
             action = CheckHover;
         }
 
