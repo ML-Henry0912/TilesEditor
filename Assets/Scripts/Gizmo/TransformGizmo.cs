@@ -60,6 +60,18 @@ namespace TilesEditor
 
         bool initialized = false;
 
+        Color[] gizmoColors = {
+            Color.red,
+            Color.green,
+            Color.blue,
+            new Color(1.0f, 1.0f, 0.0f, 0.3f),
+            new Color(1.0f, 0.0f, 1.0f, 0.3f),
+            new Color(0.0f, 1.0f, 1.0f, 0.3f),
+            Color.red,
+            Color.green,
+            Color.blue,
+        };
+
         public void Initialize(Transform target, Camera cam, GizmoMaterials materials)
         {
             this.target = target;
@@ -67,13 +79,20 @@ namespace TilesEditor
             // 檢查是否已經初始化過相同的目標
             if (initialized && this.cam == cam && this.materials == materials)
             {
-                return;
+                for (int _i = 0; _i < allGizmos.Length; _i++)
+                {
+                    allGizmos[_i].Initialize((GizmoType)_i, gizmoColors[_i], this);
+                }
+            }
+            else
+            {
+                CreateAllHandles();
+
             }
 
             this.cam = cam;
             this.materials = materials;
 
-            CreateAllHandles();
             initialized = true;
             action = CheckHover;
         }
