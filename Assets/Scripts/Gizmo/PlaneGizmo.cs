@@ -30,6 +30,7 @@ namespace TilesEditor
 
         public void OnDrag()
         {
+            Debug.Log("OnDrag");
             if (Input.GetMouseButtonUp(0))
             {
                 ResetColor();
@@ -61,7 +62,9 @@ namespace TilesEditor
 
         public void OnHover()
         {
-            if (Input.GetMouseButtonDown(0))
+            Debug.Log("OnHover");
+
+            if (Input.GetMouseButton(0))
             {
                 gizmoRoot.action = OnDrag;
                 Plane dragPlane = GetDragPlane(transform, target.position);
