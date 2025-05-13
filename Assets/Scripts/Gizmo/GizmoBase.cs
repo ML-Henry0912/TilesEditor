@@ -24,7 +24,7 @@ namespace TilesEditor
         private void OnMouseExit()
         {
             isHovered = false;
-            //SetMaterialColor(baseColor);
+            SetMaterialColor(baseColor);
         }
 
         public void SetInvisible(bool value)

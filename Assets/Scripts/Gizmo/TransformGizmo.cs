@@ -145,11 +145,11 @@ namespace TilesEditor
             bool hoverFound = false;
             foreach (var gizmo in allGizmos)
             {
-                gizmo.ResetColor();
+                //gizmo.ResetColor();
                 if (hoverFound)
                     continue;
 
-                if (gizmo != null && gizmo.IsHovered())
+                if (gizmo.IsHovered())
                 {
                     hoverFound = true;
                 }
