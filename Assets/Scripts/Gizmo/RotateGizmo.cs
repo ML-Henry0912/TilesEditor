@@ -26,11 +26,13 @@ namespace TilesEditor
 
         private bool isHovered = false;
 
-        public void Initialize(GizmoType type, Color color, TransformGizmo gizmo)
+        public void Initialize(GizmoType type, TransformGizmo gizmo)
         {
+            this.gizmo = gizmo;
             this.type = type;
-            baseColor = color;
-            SetMaterialColor(color);
+            //baseColor = color;
+            baseColor = gizmo.gizmoColors[(int)type];
+            SetMaterialColor(baseColor);
 
             switch (type)
             {
@@ -38,7 +40,7 @@ namespace TilesEditor
                 case GizmoType.ROT_Y: WorldAxis = Vector3.up; break;
                 case GizmoType.ROT_Z: WorldAxis = Vector3.forward; break;
             }
-            this.gizmo = gizmo;
+
             this.cam = gizmo.cam;
             gameObject.SetActive(ShouldBeActive());
         }

@@ -21,11 +21,12 @@ namespace TilesEditor
         protected MaterialPropertyBlock propertyBlock;
         Camera cam;
 
-        public void Initialize(GizmoType type, Color color, TransformGizmo gizmo)
+        public void Initialize(GizmoType type, TransformGizmo gizmo)
         {
             this.type = type;
-            baseColor = color;
-            SetMaterialColor(color);
+            //baseColor = color;
+            baseColor = gizmo.gizmoColors[(int)type];
+            SetMaterialColor(baseColor);
             this.gizmo = gizmo;
             this.cam = gizmo.cam;
             gameObject.SetActive(ShouldBeActive());

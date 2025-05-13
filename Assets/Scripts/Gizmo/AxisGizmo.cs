@@ -24,11 +24,12 @@ namespace TilesEditor
 
         Camera cam;
 
-        public void Initialize(GizmoType type, Color color, TransformGizmo gizmo)
+        public void Initialize(GizmoType type, TransformGizmo gizmo)
         {
             this.type = type;
-            baseColor = color;
-            SetMaterialColor(color);
+            //baseColor = color;
+            baseColor = gizmo.gizmoColors[(int)type];
+            SetMaterialColor(baseColor);
             cam = gizmo.cam;
 
             switch (this.type)
