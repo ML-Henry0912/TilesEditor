@@ -11,18 +11,19 @@
 using System;
 using UnityEngine;
 using System.Collections.Generic;
+using static TilesEditor.PlaneGizmo;
 
 namespace TilesEditor
 {
     public class TransformGizmo : MonoBehaviour
     {
         // === 常數定義 ===
-        const float AXIS_HANDLE_OFFSET = 0.75f;
+        const float AXIS_HANDLE_OFFSET = 1.25f;
         const float PLANE_HANDLE_OFFSET = 0.55f;
-        const float PLANE_HANDLE_SIZE = 0.5f;
+        const float PLANE_HANDLE_SIZE = 0.75f;
         const float ROTATE_HANDLE_SCALE = 1.2f;
         const float AXIS_HANDLE_SCALE = 0.1f;
-        const float AXIS_HANDLE_LENGTH = 0.8f;
+        const float AXIS_HANDLE_LENGTH = 0.6f;
         const float AXIS_HANDLE_THICKNESS = 16.0f;
         const float RING_RADIUS = 1.2f;
 
@@ -53,15 +54,17 @@ namespace TilesEditor
         public GizmoMaterials materials;
 
         Vector3 dragStartPos, objectStartPos;
-        AxisGizmo activeAxis;
-        PlaneGizmo activePlane;
-        RotateGizmo activeRotate;
+        [Header("Active Gizmos")]
+        [SerializeField] private AxisGizmo activeAxis;
+        [SerializeField] private PlaneGizmo activePlane;
+        [SerializeField] private RotateGizmo activeRotate;
 
         Vector3 rotateStartPoint;
         Quaternion objectStartRot;
         Plane rotationPlane;
 
-        Action action;
+        [Header("AAAA")]
+        public Action action;
 
         bool initialized = false;
 
@@ -122,9 +125,22 @@ namespace TilesEditor
             }
         }
 
-        protected void MouseDownState()
+        protected void DragPlane(PlaneType type)
         {
-            action = CheckMouseDown;
+            action = CheckDrag;
+
+            switch (type)
+            {
+                case PlaneType.XY:
+                    activePlane = xyHandle; break;
+                case PlaneType.XZ:
+                    activePlane = xzHandle; break;
+                case PlaneType.YZ:
+                    activePlane = yzHandle; break;
+                default:
+                    activePlane = null; break;
+            }
+
         }
 
         // 狀態：Hover，檢查是否按下滑鼠進入拖曳
@@ -133,8 +149,6 @@ namespace TilesEditor
             if (Input.GetMouseButtonDown(0))
             {
                 CheckDrag();
-
-
             }
             else if (!TryHoverHandle())
             {
@@ -224,7 +238,7 @@ namespace TilesEditor
             if (rotateY && yRotHandle != null && yRotHandle.IsMouseOnGizmo(center, transform.up, RING_RADIUS))
             {
                 activeRotate = yRotHandle;
-                action = DragRotate;
+                action = OnDragRotate;
                 rotationPlane = new Plane(transform.up, center);
                 Ray ray = cam.ScreenPointToRay(Input.mousePosition);
                 if (rotationPlane.Raycast(ray, out float enter))
@@ -237,7 +251,7 @@ namespace TilesEditor
             else if (rotateX && xRotHandle != null && xRotHandle.IsMouseOnGizmo(center, transform.right, RING_RADIUS))
             {
                 activeRotate = xRotHandle;
-                action = DragRotate;
+                action = OnDragRotate;
                 rotationPlane = new Plane(transform.right, center);
                 Ray ray = cam.ScreenPointToRay(Input.mousePosition);
                 if (rotationPlane.Raycast(ray, out float enter))
@@ -250,7 +264,7 @@ namespace TilesEditor
             else if (rotateZ && zRotHandle != null && zRotHandle.IsMouseOnGizmo(center, transform.forward, RING_RADIUS))
             {
                 activeRotate = zRotHandle;
-                action = DragRotate;
+                action = OnDragRotate;
                 rotationPlane = new Plane(transform.forward, center);
                 Ray ray = cam.ScreenPointToRay(Input.mousePosition);
                 if (rotationPlane.Raycast(ray, out float enter))
@@ -263,7 +277,7 @@ namespace TilesEditor
             else if (translateX && xHandle != null && xHandle.IsHovered())
             {
                 activeAxis = xHandle;
-                action = DragAxis;
+                action = OnDragAxis;
                 Vector3 axisDir = transform.TransformDirection(xHandle.WorldDirection).normalized;
                 dragStartPos = GetClosestPointOnAxis(cam.ScreenPointToRay(Input.mousePosition), target.position, axisDir);
                 objectStartPos = target.position;
@@ -272,7 +286,7 @@ namespace TilesEditor
             else if (translateY && yHandle != null && yHandle.IsHovered())
             {
                 activeAxis = yHandle;
-                action = DragAxis;
+                action = OnDragAxis;
                 Vector3 axisDir = transform.TransformDirection(yHandle.WorldDirection).normalized;
                 dragStartPos = GetClosestPointOnAxis(cam.ScreenPointToRay(Input.mousePosition), target.position, axisDir);
                 objectStartPos = target.position;
@@ -281,7 +295,7 @@ namespace TilesEditor
             else if (translateZ && zHandle != null && zHandle.IsHovered())
             {
                 activeAxis = zHandle;
-                action = DragAxis;
+                action = OnDragAxis;
                 Vector3 axisDir = transform.TransformDirection(zHandle.WorldDirection).normalized;
                 dragStartPos = GetClosestPointOnAxis(cam.ScreenPointToRay(Input.mousePosition), target.position, axisDir);
                 objectStartPos = target.position;
@@ -290,7 +304,7 @@ namespace TilesEditor
             else if (translateX && translateY && xyHandle != null && xyHandle.IsMouseOnGizmo())
             {
                 activePlane = xyHandle;
-                action = DragPlane;
+                action = OnDragPlane;
                 Plane dragPlane = xyHandle.GetDragPlane(transform, target.position);
                 Ray ray = cam.ScreenPointToRay(Input.mousePosition);
                 if (!dragPlane.Raycast(ray, out float enter))
@@ -306,7 +320,7 @@ namespace TilesEditor
             else if (translateX && translateZ && xzHandle != null && xzHandle.IsMouseOnGizmo())
             {
                 activePlane = xzHandle;
-                action = DragPlane;
+                action = OnDragPlane;
                 Plane dragPlane = xzHandle.GetDragPlane(transform, target.position);
                 Ray ray = cam.ScreenPointToRay(Input.mousePosition);
                 if (!dragPlane.Raycast(ray, out float enter))
@@ -322,7 +336,7 @@ namespace TilesEditor
             else if (translateY && translateZ && yzHandle != null && yzHandle.IsMouseOnGizmo())
             {
                 activePlane = yzHandle;
-                action = DragPlane;
+                action = OnDragPlane;
                 Plane dragPlane = yzHandle.GetDragPlane(transform, target.position);
                 Ray ray = cam.ScreenPointToRay(Input.mousePosition);
                 if (!dragPlane.Raycast(ray, out float enter))
@@ -339,7 +353,7 @@ namespace TilesEditor
         }
 
         // 拖曳軸
-        void DragAxis()
+        void OnDragAxis()
         {
             if (Input.GetMouseButtonUp(0))
             {
@@ -356,13 +370,16 @@ namespace TilesEditor
         }
 
         // 拖曳平面
-        void DragPlane()
+        void OnDragPlane()
         {
             if (Input.GetMouseButtonUp(0))
             {
                 EndDrag();
                 return;
             }
+
+            if (activePlane == null)
+                return;
 
             Ray ray = cam.ScreenPointToRay(Input.mousePosition);
             Plane dragPlane = activePlane.GetDragPlane(transform, target.position);
@@ -376,7 +393,7 @@ namespace TilesEditor
         }
 
         // 拖曳旋轉
-        void DragRotate()
+        void OnDragRotate()
         {
             if (Input.GetMouseButtonUp(0))
             {
@@ -462,31 +479,8 @@ namespace TilesEditor
             go.transform.localRotation = localRot;
             go.transform.localScale = new Vector3(AXIS_HANDLE_SCALE, AXIS_HANDLE_LENGTH, AXIS_HANDLE_SCALE);
 
-            // 設定 Collider 方向
-            var collider = go.GetComponent<CapsuleCollider>();
-            if (collider != null)
-            {
-                // 先設定基本尺寸
-                collider.radius = AXIS_HANDLE_SCALE * 0.5f;
-                collider.height = AXIS_HANDLE_LENGTH;
-
-                // 根據軸向設定方向
-                switch (axis)
-                {
-                    case AxisGizmo.Axis.X:
-                        collider.direction = 0; // X軸方向
-                        break;
-                    case AxisGizmo.Axis.Y:
-                        collider.direction = 1; // Y軸方向
-                        break;
-                    case AxisGizmo.Axis.Z:
-                        collider.direction = 2; // Z軸方向
-                        break;
-                }
-            }
-
             var axisGizmo = go.AddComponent<AxisGizmo>();
-            axisGizmo.Initialize(axis, color, this, AXIS_HANDLE_THICKNESS, AXIS_HANDLE_THICKNESS);
+            axisGizmo.Initialize(axis, color, this);
             // 指定材質
             var renderer = go.GetComponent<MeshRenderer>();
             if (axis == AxisGizmo.Axis.X) renderer.sharedMaterial = materials.xRed;

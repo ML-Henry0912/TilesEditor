@@ -20,7 +20,7 @@ namespace TilesEditor
             SetPlaneGizmoProperties(PlaneGizmo.PlaneType.XY, new Vector3(0.0f, 0.0f, -0.6f));
             SetPlaneGizmoInvisible(PlaneGizmo.PlaneType.XY);
 
-            MouseDownState();
+            //DragPlane(PlaneGizmo.PlaneType.XY);
 
         }
     }

@@ -19,7 +19,7 @@ namespace TilesEditor
 
         private bool isHovered = false;
 
-        public void Initialize(Axis axisType, Color color, TransformGizmo gizmo, float length, float thickness)
+        public void Initialize(Axis axisType, Color color, TransformGizmo gizmo)
         {
             axis = axisType;
             baseColor = color;
@@ -33,22 +33,6 @@ namespace TilesEditor
             }
             this.gizmo = gizmo;
 
-            // 確保有 Collider 元件
-            var collider = GetComponent<CapsuleCollider>();
-            if (collider == null)
-            {
-                collider = gameObject.AddComponent<CapsuleCollider>();
-            }
-
-            // 設定 Collider 屬性
-            // 考慮到 localScale 的影響，需要調整實際尺寸
-            float actualLength = length * transform.localScale.y;
-            float actualRadius = thickness * 0.5f * transform.localScale.x;
-
-            collider.radius = actualRadius;
-            collider.height = actualLength;
-            collider.direction = 2; // Z軸方向
-            collider.center = Vector3.zero;
         }
 
         private void OnMouseEnter()
