@@ -61,6 +61,7 @@ namespace TilesEditor
                     angle = -angle;
 
                 target.rotation = objectStartRot * Quaternion.AngleAxis(angle, WorldAxis);
+
             }
         }
 
@@ -85,89 +86,5 @@ namespace TilesEditor
         }
     }
 
-    /// <summary>
-    /// 提供將任意 3D 空間中圓形投影至螢幕並計算橢圓焦點與主次軸資訊的工具。
-    /// </summary>
-    public static class EllipseProjectionUtility
-    {
-        public struct EllipseFociOnScreen
-        {
-            public Vector2 screenCenter;                 // 圓心的螢幕座標
-            public Vector2 majorAxisDirection;           // 橢圓主軸方向（螢幕空間）
-            public float majorAxisLength;                // 主軸半長度
-            public float minorAxisLength;                // 次軸半長度
-        }
-
-        /// <summary>
-        /// 計算一個在任意方向的 3D 圓形，在螢幕上的投影橢圓的幾何焦點與軸資訊。
-        /// </summary>
-        /// <param name="cam">攝影機</param>
-        /// <param name="circleCenter">圓心位置（世界空間）</param>
-        /// <param name="circleNormal">圓面法向量（世界空間）</param>
-        /// <param name="radius">圓半徑</param>
-        /// <returns>橢圓主軸資訊</returns>
-        public static EllipseFociOnScreen ProjectCircleToScreen(Camera cam, Vector3 circleCenter, Vector3 circleNormal, float radius)
-        {
-            EllipseFociOnScreen result = default;
-
-            if (cam == null)
-            {
-                Debug.LogWarning("Camera is null.");
-                return result;
-            }
-
-            Vector3 normal = circleNormal.normalized;
-
-            // 建立圓面上的兩個正交向量（軸）
-            Vector3 axis1 = Vector3.Cross(normal, Vector3.up).normalized;
-            if (axis1 == Vector3.zero)
-                axis1 = Vector3.Cross(normal, Vector3.right).normalized;
-
-            Vector3 axis2 = Vector3.Cross(normal, axis1).normalized;
-
-            // 在圓上取四個方向端點
-            Vector3 worldA = circleCenter + axis1 * radius;
-            Vector3 worldB = circleCenter - axis1 * radius;
-            Vector3 worldC = circleCenter + axis2 * radius;
-            Vector3 worldD = circleCenter - axis2 * radius;
-
-            // 投影至螢幕空間
-            Vector3 screenA = cam.WorldToScreenPoint(worldA);
-            Vector3 screenB = cam.WorldToScreenPoint(worldB);
-            Vector3 screenC = cam.WorldToScreenPoint(worldC);
-            Vector3 screenD = cam.WorldToScreenPoint(worldD);
-            Vector3 screenCenter3 = cam.WorldToScreenPoint(circleCenter);
-            float screenDepth = screenCenter3.z;
-
-            if (screenDepth <= 0f)
-            {
-                Debug.LogWarning("Circle is behind the camera.");
-                return result;
-            }
-
-            Vector2 screenCenter = new Vector2(screenCenter3.x, screenCenter3.y);
-
-            // 主軸與次軸
-            float aLen = (screenA - screenB).magnitude;
-            float bLen = (screenC - screenD).magnitude;
-            float a = aLen / 2f;
-            float b = bLen / 2f;
-            Vector2 mainAxisDir = (screenA - screenB).normalized;
-
-            if (b > a)
-            {
-                (a, b) = (b, a);
-                mainAxisDir = (screenC - screenD).normalized;
-            }
-
-            // 輸出填值
-            result.screenCenter = screenCenter;
-            result.majorAxisDirection = mainAxisDir;
-            result.majorAxisLength = a;
-            result.minorAxisLength = b;
-
-            return result;
-        }
-    }
 }
 
