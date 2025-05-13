@@ -142,15 +142,7 @@ namespace TilesEditor
                 }
                 else if (activeGizmo is RotateGizmo)
                 {
-                    action = OnDragRotate;
-                    rotateGizmo = (RotateGizmo)activeGizmo;
-                    rotationPlane = new Plane(rotateGizmo.WorldAxis, target.position);
-                    Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-                    if (rotationPlane.Raycast(ray, out float enter))
-                    {
-                        rotateStartPoint = ray.GetPoint(enter);
-                        objectStartRot = target.rotation;
-                    }
+
                 }
             }
             else if (!TryHoverHandle())
@@ -210,21 +202,6 @@ namespace TilesEditor
                 return;
             }
 
-            Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-            if (rotationPlane.Raycast(ray, out float enter))
-            {
-                Vector3 currentPoint = ray.GetPoint(enter);
-                Vector3 startDir = (rotateStartPoint - target.position).normalized;
-                Vector3 currentDir = (currentPoint - target.position).normalized;
-
-                Quaternion deltaRotation = Quaternion.FromToRotation(startDir, currentDir);
-                deltaRotation.ToAngleAxis(out float angle, out Vector3 axis);
-
-                if (Vector3.Dot(axis, rotateGizmo.WorldAxis) < 0f)
-                    angle = -angle;
-
-                target.rotation = objectStartRot * Quaternion.AngleAxis(angle, rotateGizmo.WorldAxis);
-            }
         }
 
         public void EndDrag()

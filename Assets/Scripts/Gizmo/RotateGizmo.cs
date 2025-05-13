@@ -13,7 +13,11 @@ namespace TilesEditor
     public class RotateGizmo : GizmoBase, iGizmo
     {
         [HideInInspector]
-        public Vector3 WorldAxis;
+        Vector3 WorldAxis;
+        private Vector3 rotateStartPoint;
+        private Quaternion objectStartRot;
+        private Plane rotationPlane;
+        private Transform target;
 
         public void Initialize(GizmoType type, TransformGizmo gizmo)
         {
@@ -21,6 +25,7 @@ namespace TilesEditor
             this.type = type;
             baseColor = gizmo.gizmoColors[(int)type];
             SetMaterialColor(baseColor);
+            target = gizmo.target;
 
             switch (type)
             {
@@ -33,7 +38,6 @@ namespace TilesEditor
             gameObject.SetActive(ShouldBeActive());
         }
 
-
         public void OnDrag()
         {
             if (Input.GetMouseButtonUp(0))
@@ -43,11 +47,11 @@ namespace TilesEditor
             }
 
             Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-            if (theGizmo.rotationPlane.Raycast(ray, out float enter))
+            if (rotationPlane.Raycast(ray, out float enter))
             {
                 Vector3 currentPoint = ray.GetPoint(enter);
-                Vector3 startDir = (theGizmo.rotateStartPoint - theGizmo.target.position).normalized;
-                Vector3 currentDir = (currentPoint - theGizmo.target.position).normalized;
+                Vector3 startDir = (rotateStartPoint - target.position).normalized;
+                Vector3 currentDir = (currentPoint - target.position).normalized;
 
                 Quaternion deltaRotation = Quaternion.FromToRotation(startDir, currentDir);
                 deltaRotation.ToAngleAxis(out float angle, out Vector3 axis);
@@ -55,25 +59,22 @@ namespace TilesEditor
                 if (Vector3.Dot(axis, WorldAxis) < 0f)
                     angle = -angle;
 
-                theGizmo.target.rotation = theGizmo.objectStartRot * Quaternion.AngleAxis(angle, WorldAxis);
+                target.rotation = objectStartRot * Quaternion.AngleAxis(angle, WorldAxis);
             }
         }
-
 
         public void OnHover()
         {
             if (Input.GetMouseButtonDown(0))
             {
                 theGizmo.action = OnDrag;
-
-                theGizmo.rotationPlane = new Plane(WorldAxis, theGizmo.target.position);
+                rotationPlane = new Plane(WorldAxis, target.position);
                 Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-                if (theGizmo.rotationPlane.Raycast(ray, out float enter))
+                if (rotationPlane.Raycast(ray, out float enter))
                 {
-                    theGizmo.rotateStartPoint = ray.GetPoint(enter);
-                    theGizmo.objectStartRot = theGizmo.target.rotation;
+                    rotateStartPoint = ray.GetPoint(enter);
+                    objectStartRot = target.rotation;
                 }
-
             }
             else if (!IsHovered())
             {
@@ -81,7 +82,6 @@ namespace TilesEditor
             }
         }
     }
-
 
     /// <summary>
     /// 提供將任意 3D 空間中圓形投影至螢幕並計算橢圓焦點與主次軸資訊的工具。
