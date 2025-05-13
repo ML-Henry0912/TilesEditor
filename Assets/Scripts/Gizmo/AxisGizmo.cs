@@ -55,7 +55,7 @@ namespace TilesEditor
         {
             if (Input.GetMouseButton(0))
             {
-                gizmoRoot.action = OnDrag;
+                gizmoRoot.OnDrag(this);
                 Vector3 axisDir = transform.TransformDirection(Vector3.up).normalized;
                 dragStartPos = GetClosestPointOnAxis(cam.ScreenPointToRay(Input.mousePosition), target.position, axisDir);
                 objectStartPos = target.position;

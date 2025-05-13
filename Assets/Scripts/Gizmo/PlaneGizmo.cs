@@ -67,7 +67,7 @@ namespace TilesEditor
         {
             if (Input.GetMouseButton(0))
             {
-                gizmoRoot.action = OnDrag;
+                gizmoRoot.OnDrag(this);
                 Plane dragPlane = GetDragPlane(transform, target.position);
                 Ray ray = cam.ScreenPointToRay(Input.mousePosition);
                 if (!dragPlane.Raycast(ray, out float enter))

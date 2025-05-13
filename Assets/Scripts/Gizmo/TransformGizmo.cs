@@ -23,7 +23,7 @@ namespace TilesEditor
         const float AXIS_HANDLE_SCALE = 0.1f;
         const float AXIS_HANDLE_LENGTH = 0.6f;
 
-        public Transform target;// { get; private set; }
+        public Transform target;
         public Camera cam;
 
         [Header("Gizmo Enable")]
@@ -33,7 +33,7 @@ namespace TilesEditor
 
         public GizmoMaterials materials;
 
-        public Action action;
+        Action action;
 
         bool initialized = false;
         bool isHidden = false;
@@ -109,6 +109,16 @@ namespace TilesEditor
                 }
             }
 
+        }
+
+        public void OnDrag(iGizmo gizmo)
+        {
+            action = gizmo.OnDrag;
+        }
+
+        public bool IsDragging(iGizmo gizmo)
+        {
+            return action == gizmo.OnDrag;
         }
 
         public void EndDrag()

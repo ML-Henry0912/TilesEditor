@@ -9,10 +9,10 @@ namespace TilesEditor
     {
         protected GizmoType type;
 
-        protected bool isHovered = false;
+        bool isHovered = false;
         protected TransformGizmo gizmoRoot;
         protected Color baseColor;
-        protected MaterialPropertyBlock propertyBlock;
+        MaterialPropertyBlock propertyBlock;
         protected Camera cam;
 
         private void OnMouseEnter()
@@ -23,22 +23,8 @@ namespace TilesEditor
         private void OnMouseExit()
         {
             isHovered = false;
-            if (gizmoRoot.action != ((iGizmo)this).OnDrag)
+            if (gizmoRoot.IsDragging((iGizmo)this))
                 SetMaterialColor(baseColor);
-        }
-
-        public void SetInvisible(bool value)
-        {
-            var renderer = GetComponent<MeshRenderer>();
-            if (renderer != null)
-            {
-                renderer.enabled = !value;
-            }
-        }
-
-        public bool ShouldBeActive()
-        {
-            return gizmoRoot.gizmoEnable[(int)type];
         }
 
         public bool IsHovered()
@@ -55,7 +41,21 @@ namespace TilesEditor
 
         }
 
-        public void SetMaterialColor(Color color)
+        public void SetInvisible(bool value)
+        {
+            var renderer = GetComponent<MeshRenderer>();
+            if (renderer != null)
+            {
+                renderer.enabled = !value;
+            }
+        }
+
+        protected bool ShouldBeActive()
+        {
+            return gizmoRoot.gizmoEnable[(int)type];
+        }
+
+        protected void SetMaterialColor(Color color)
         {
             if (propertyBlock == null)
                 propertyBlock = new MaterialPropertyBlock();
@@ -68,7 +68,7 @@ namespace TilesEditor
             }
         }
 
-        public void ResetColor()
+        protected void ResetColor()
         {
             SetMaterialColor(baseColor);
         }

@@ -23,9 +23,6 @@ namespace TilesEditor
         public enum GizmoType : int { X, Y, Z, XY, XZ, YZ, ROT_X, ROT_Y, ROT_Z }
 
         void Initialize(GizmoType type, TransformGizmo gizmo);
-        void SetMaterialColor(Color color);
-        void ResetColor();
-        bool ShouldBeActive();
         bool IsHovered();
         void SetInvisible(bool value);
         void OnHover();
