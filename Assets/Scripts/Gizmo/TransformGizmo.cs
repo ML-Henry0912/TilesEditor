@@ -332,9 +332,9 @@ namespace TilesEditor
             allGizmos[4] = CreatePlaneHandle("XZ_Handle", new Vector3(PLANE_HANDLE_OFFSET, 0.0f, PLANE_HANDLE_OFFSET), Quaternion.Euler(90.0f, 0.0f, 0.0f), new Color(1.0f, 0.0f, 1.0f, 0.3f), PlaneType.XZ, PLANE_HANDLE_SIZE);
             allGizmos[5] = CreatePlaneHandle("YZ_Handle", new Vector3(0.0f, PLANE_HANDLE_OFFSET, PLANE_HANDLE_OFFSET), Quaternion.Euler(0.0f, -90.0f, 0.0f), new Color(0.0f, 1.0f, 1.0f, 0.3f), PlaneType.YZ, PLANE_HANDLE_SIZE);
 
-            allGizmos[6] = CreateRotateHandle("X_Rotate", Vector3.zero, Quaternion.Euler(0.0f, 0.0f, 90.0f), Color.red, RotateGizmo.Axis.X);
-            allGizmos[7] = CreateRotateHandle("Y_Rotate", Vector3.zero, Quaternion.identity, Color.green, RotateGizmo.Axis.Y);
-            allGizmos[8] = CreateRotateHandle("Z_Rotate", Vector3.zero, Quaternion.Euler(90.0f, 0.0f, 0.0f), Color.blue, RotateGizmo.Axis.Z);
+            allGizmos[6] = CreateRotateHandle("X_Rotate", Vector3.zero, Quaternion.Euler(0.0f, 0.0f, 90.0f), Color.red, GizmoType.ROT_X);
+            allGizmos[7] = CreateRotateHandle("Y_Rotate", Vector3.zero, Quaternion.identity, Color.green, GizmoType.ROT_Y);
+            allGizmos[8] = CreateRotateHandle("Z_Rotate", Vector3.zero, Quaternion.Euler(90.0f, 0.0f, 0.0f), Color.blue, GizmoType.ROT_Z);
         }
 
         AxisGizmo CreateAxisHandle(string name, Vector3 localPos, Quaternion localRot, Color color, GizmoType axis)
@@ -377,31 +377,31 @@ namespace TilesEditor
             return planeGizmo;
         }
 
-        RotateGizmo CreateRotateHandle(string name, Vector3 localPos, Quaternion localRot, Color color, RotateGizmo.Axis axis)
+        RotateGizmo CreateRotateHandle(string name, Vector3 localPos, Quaternion localRot, Color color, GizmoType type)
         {
             GameObject go = new GameObject(name);
             go.transform.SetParent(transform);
             go.transform.localPosition = localPos;
             go.transform.localRotation = localRot;
-            go.transform.localScale = Vector3.one * ROTATE_HANDLE_SCALE;
-            var mf = go.AddComponent<MeshFilter>();
-            var mr = go.AddComponent<MeshRenderer>();
-            var mesh = TorusMeshGenerator.Generate(1.0f, 0.05f, 32, 3);
-            mf.mesh = mesh;
-            var mc = go.AddComponent<MeshCollider>();
-            mc.sharedMesh = mesh;
-            var gizmo = go.AddComponent<RotateGizmo>();
-            gizmo.Initialize(axis, color, this, AXIS_HANDLE_THICKNESS);
-            // 指定材質
-            if (axis == RotateGizmo.Axis.X) mr.sharedMaterial = materials.materials[GIZMO_X];
-            else if (axis == RotateGizmo.Axis.Y) mr.sharedMaterial = materials.materials[GIZMO_Y];
-            else if (axis == RotateGizmo.Axis.Z) mr.sharedMaterial = materials.materials[GIZMO_Z];
-            return gizmo;
+
+            var meshFilter = go.AddComponent<MeshFilter>();
+            var mesh = TorusMeshGenerator.Generate(1.2f);
+            meshFilter.sharedMesh = mesh;
+
+            var meshRenderer = go.AddComponent<MeshRenderer>();
+            meshRenderer.sharedMaterial = materials.materials[type == GizmoType.ROT_X ? GIZMO_X : type == GizmoType.ROT_Y ? GIZMO_Y : GIZMO_Z];
+
+            var meshCollider = go.AddComponent<MeshCollider>();
+            meshCollider.sharedMesh = mesh;
+
+            var rotateGizmo = go.AddComponent<RotateGizmo>();
+            rotateGizmo.Initialize(type, color, this);
+            return rotateGizmo;
         }
 
         public static class TorusMeshGenerator
         {
-            public static Mesh Generate(float ringRadius = 1f, float tubeRadius = 0.05f, int segments = 64, int sides = 12)
+            public static Mesh Generate(float ringRadius = 1f, float tubeRadius = 0.05f, int segments = 32, int sides = 3)
             {
                 Mesh mesh = new Mesh();
                 mesh.name = "Torus";

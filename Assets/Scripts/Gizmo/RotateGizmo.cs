@@ -6,6 +6,7 @@
 // 4. 本元件為 TransformGizmo 的子物件，請勿手動移除或更改父子結構。
 // =============================================
 using UnityEngine;
+using static TilesEditor.iGizmo;
 
 namespace TilesEditor
 {
@@ -13,35 +14,32 @@ namespace TilesEditor
     {
         const float RING_RADIUS = 1.2f;
 
-        public enum Axis { X, Y, Z }
-        public Axis axis;
+        public GizmoType type;
 
         [HideInInspector]
         public Vector3 WorldAxis;
 
         Camera cam;
-        float thickness;
         protected TransformGizmo gizmo;
         public Color baseColor;
         protected MaterialPropertyBlock propertyBlock;
 
         private bool isHovered = false;
 
-        public void Initialize(Axis axisType, Color color, TransformGizmo gizmo, float thickness)
+        public void Initialize(GizmoType type, Color color, TransformGizmo gizmo)
         {
-            axis = axisType;
+            this.type = type;
             baseColor = color;
             SetMaterialColor(color);
 
-            switch (axis)
+            switch (type)
             {
-                case Axis.X: WorldAxis = Vector3.right; break;
-                case Axis.Y: WorldAxis = Vector3.up; break;
-                case Axis.Z: WorldAxis = Vector3.forward; break;
+                case GizmoType.ROT_X: WorldAxis = Vector3.right; break;
+                case GizmoType.ROT_Y: WorldAxis = Vector3.up; break;
+                case GizmoType.ROT_Z: WorldAxis = Vector3.forward; break;
             }
             this.gizmo = gizmo;
             this.cam = gizmo.cam;
-            this.thickness = thickness;
         }
 
         public void SetMaterialColor(Color color)
@@ -83,11 +81,11 @@ namespace TilesEditor
         public bool ShouldBeActive()
         {
             if (gizmo == null) return false;
-            switch (axis)
+            switch (type)
             {
-                case Axis.X: return gizmo.rotateX;
-                case Axis.Y: return gizmo.rotateY;
-                case Axis.Z: return gizmo.rotateZ;
+                case GizmoType.ROT_X: return gizmo.rotateX;
+                case GizmoType.ROT_Y: return gizmo.rotateY;
+                case GizmoType.ROT_Z: return gizmo.rotateZ;
                 default: return false;
             }
         }

@@ -13,7 +13,7 @@ namespace TilesEditor
 {
     public class AxisGizmo : MonoBehaviour, iGizmo
     {
-        public GizmoType axis;
+        public GizmoType type;
 
         [HideInInspector] public Vector3 WorldDirection;
 
@@ -24,14 +24,14 @@ namespace TilesEditor
 
         Camera cam;
 
-        public void Initialize(GizmoType axisType, Color color, TransformGizmo gizmo)
+        public void Initialize(GizmoType type, Color color, TransformGizmo gizmo)
         {
-            axis = axisType;
+            this.type = type;
             baseColor = color;
             SetMaterialColor(color);
             cam = gizmo.cam;
 
-            switch (axis)
+            switch (this.type)
             {
                 case GizmoType.X: WorldDirection = Vector3.right; break;
                 case GizmoType.Y: WorldDirection = Vector3.up; break;
@@ -79,7 +79,7 @@ namespace TilesEditor
         public bool ShouldBeActive()
         {
             if (gizmo == null) return false;
-            switch (axis)
+            switch (type)
             {
                 case GizmoType.X: return gizmo.translateX;
                 case GizmoType.Y: return gizmo.translateY;
