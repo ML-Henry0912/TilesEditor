@@ -122,23 +122,6 @@ namespace TilesEditor
             }
         }
 
-        protected void DragPlane(PlaneType type)
-        {
-            action = CheckDrag;
-
-            switch (type)
-            {
-                case PlaneType.XY:
-                    activeGizmo = xyHandle; break;
-                case PlaneType.XZ:
-                    activeGizmo = xzHandle; break;
-                case PlaneType.YZ:
-                    activeGizmo = yzHandle; break;
-                default:
-                    activeGizmo = null; break;
-            }
-        }
-
         // 狀態：Hover，檢查是否按下滑鼠進入拖曳
         void CheckMouseDown()
         {
@@ -155,75 +138,20 @@ namespace TilesEditor
         // 嘗試 hover 到 handle，並處理 hover 效果
         bool TryHoverHandle()
         {
+            bool hoverFound = false;
             foreach (var gizmo in allGizmos)
             {
                 gizmo.ResetColor();
-            }
+                if (hoverFound)
+                    continue;
 
-            Vector3 center = target.position;
-            bool hoverFound = false;
-            if (rotateY && yRotHandle != null && yRotHandle.IsHovered())
-            {
-                yRotHandle.SetMaterialColor(Color.yellow);
-                var mr = yRotHandle.GetComponent<MeshRenderer>();
-                if (mr != null) mr.sharedMaterial = materials.hoverYellow;
-                hoverFound = true;
-            }
-            else if (rotateX && xRotHandle != null && xRotHandle.IsHovered())
-            {
-                xRotHandle.SetMaterialColor(Color.yellow);
-                var mr = xRotHandle.GetComponent<MeshRenderer>();
-                if (mr != null) mr.sharedMaterial = materials.hoverYellow;
-                hoverFound = true;
-            }
-            else if (rotateZ && zRotHandle != null && zRotHandle.IsHovered())
-            {
-                zRotHandle.SetMaterialColor(Color.yellow);
-                var mr = zRotHandle.GetComponent<MeshRenderer>();
-                if (mr != null) mr.sharedMaterial = materials.hoverYellow;
-                hoverFound = true;
-            }
-            else if (translateX && xHandle != null && xHandle.IsHovered())
-            {
-                xHandle.SetMaterialColor(Color.yellow);
-                var mr = xHandle.GetComponent<MeshRenderer>();
-                if (mr != null) mr.sharedMaterial = materials.hoverYellow;
-                hoverFound = true;
-            }
-            else if (translateY && yHandle != null && yHandle.IsHovered())
-            {
-                yHandle.SetMaterialColor(Color.yellow);
-                var mr = yHandle.GetComponent<MeshRenderer>();
-                if (mr != null) mr.sharedMaterial = materials.hoverYellow;
-                hoverFound = true;
-            }
-            else if (translateZ && zHandle != null && zHandle.IsHovered())
-            {
-                zHandle.SetMaterialColor(Color.yellow);
-                var mr = zHandle.GetComponent<MeshRenderer>();
-                if (mr != null) mr.sharedMaterial = materials.hoverYellow;
-                hoverFound = true;
-            }
-            else if (translateX && translateY && xyHandle != null && xyHandle.IsHovered())
-            {
-                xyHandle.SetMaterialColor(Color.yellow);
-                var mr = xyHandle.GetComponent<MeshRenderer>();
-                if (mr != null) mr.sharedMaterial = materials.hoverYellow;
-                hoverFound = true;
-            }
-            else if (translateX && translateZ && xzHandle != null && xzHandle.IsHovered())
-            {
-                xzHandle.SetMaterialColor(Color.yellow);
-                var mr = xzHandle.GetComponent<MeshRenderer>();
-                if (mr != null) mr.sharedMaterial = materials.hoverYellow;
-                hoverFound = true;
-            }
-            else if (translateY && translateZ && yzHandle != null && yzHandle.IsHovered())
-            {
-                yzHandle.SetMaterialColor(Color.yellow);
-                var mr = yzHandle.GetComponent<MeshRenderer>();
-                if (mr != null) mr.sharedMaterial = materials.hoverYellow;
-                hoverFound = true;
+                if (gizmo != null && gizmo.ShouldBeActive() && gizmo.IsHovered())
+                {
+                    gizmo.SetMaterialColor(Color.yellow);
+                    var mr = (gizmo as MonoBehaviour)?.GetComponent<MeshRenderer>();
+                    if (mr != null) mr.sharedMaterial = materials.hoverYellow;
+                    hoverFound = true;
+                }
             }
             return hoverFound;
         }
