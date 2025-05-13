@@ -360,7 +360,7 @@ namespace TilesEditor
             go.transform.localScale = Vector3.one * ROTATE_HANDLE_SCALE;
             var mf = go.AddComponent<MeshFilter>();
             var mr = go.AddComponent<MeshRenderer>();
-            var mesh = TorusMeshGenerator.Generate(1.0f, 0.05f, 64, 12);
+            var mesh = TorusMeshGenerator.Generate(1.0f, 0.05f, 32, 3);
             mf.mesh = mesh;
             var mc = go.AddComponent<MeshCollider>();
             mc.sharedMesh = mesh;
