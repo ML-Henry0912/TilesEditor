@@ -22,11 +22,14 @@ namespace TilesEditor
         public Color baseColor;
         protected MaterialPropertyBlock propertyBlock;
 
+        Camera cam;
+
         public void Initialize(Axis axisType, Color color, TransformGizmo gizmo)
         {
             axis = axisType;
             baseColor = color;
             SetMaterialColor(color);
+            cam = gizmo.cam;
 
             switch (axis)
             {
@@ -83,6 +86,27 @@ namespace TilesEditor
                 case Axis.Z: return gizmo.translateZ;
                 default: return false;
             }
+        }
+
+        public void SetInvisible(bool value)
+        {
+            var renderer = GetComponent<MeshRenderer>();
+            if (renderer != null)
+            {
+                renderer.enabled = !value;
+            }
+        }
+
+        public void OnDrag()
+        {
+            if (gizmo == null || gizmo.target == null || cam == null) return;
+
+            Ray ray = cam.ScreenPointToRay(Input.mousePosition);
+            Vector3 axisDir = gizmo.transform.TransformDirection(WorldDirection).normalized;
+            Vector3 current = gizmo.GetClosestPointOnAxis(ray, gizmo.target.position, axisDir);
+            Vector3 delta = Vector3.Project(current - gizmo.dragStartPos, axisDir);
+            if (delta.magnitude < 100f)
+                gizmo.target.position = gizmo.objectStartPos + delta;
         }
     }
 }

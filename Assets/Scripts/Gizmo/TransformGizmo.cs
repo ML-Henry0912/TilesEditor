@@ -40,27 +40,21 @@ namespace TilesEditor
         public bool rotateZ = true;
 
         private iGizmo[] allGizmos = new iGizmo[9];
-        AxisGizmo xHandle { get => (AxisGizmo)allGizmos[0]; set => allGizmos[0] = value; }
-        AxisGizmo yHandle { get => (AxisGizmo)allGizmos[1]; set => allGizmos[1] = value; }
-        AxisGizmo zHandle { get => (AxisGizmo)allGizmos[2]; set => allGizmos[2] = value; }
-        PlaneGizmo xyHandle { get => (PlaneGizmo)allGizmos[3]; set => allGizmos[3] = value; }
-        PlaneGizmo xzHandle { get => (PlaneGizmo)allGizmos[4]; set => allGizmos[4] = value; }
-        PlaneGizmo yzHandle { get => (PlaneGizmo)allGizmos[5]; set => allGizmos[5] = value; }
-        RotateGizmo xRotHandle { get => (RotateGizmo)allGizmos[6]; set => allGizmos[6] = value; }
-        RotateGizmo yRotHandle { get => (RotateGizmo)allGizmos[7]; set => allGizmos[7] = value; }
-        RotateGizmo zRotHandle { get => (RotateGizmo)allGizmos[8]; set => allGizmos[8] = value; }
 
         public GizmoMaterials materials;
 
-        Vector3 dragStartPos, objectStartPos;
-        [Header("Active Gizmos")]
+        public Vector3 dragStartPos, objectStartPos;
+        [Header("Active Gizmo")]
         [SerializeField] private iGizmo activeGizmo;
+        [Header("Active Gizmos")]
+        [SerializeField] private AxisGizmo axisGizmo;
+        [SerializeField] private PlaneGizmo planeGizmo;
+        [SerializeField] private RotateGizmo rotateGizmo;
 
-        Vector3 rotateStartPoint;
-        Quaternion objectStartRot;
-        Plane rotationPlane;
+        public Vector3 rotateStartPoint;
+        public Quaternion objectStartRot;
+        public Plane rotationPlane;
 
-        [Header("AAAA")]
         public Action action;
 
         bool initialized = false;
@@ -68,7 +62,7 @@ namespace TilesEditor
         public void Initialize(Transform target, Camera cam, GizmoMaterials materials)
         {
             // 檢查是否已經初始化過相同的目標
-            if (initialized && this.target == target && this.cam == cam && this.materials == materials)
+            if (initialized && this.cam == cam && this.materials == materials)
             {
                 return;
             }
@@ -77,19 +71,53 @@ namespace TilesEditor
             this.cam = cam;
             this.materials = materials;
 
-            // 先 Destroy 舊的 handle GameObject，避免記憶體 leak
-            for (int _i = 0; _i < allGizmos.Length; _i++)
-            {
-                if (allGizmos[_i] != null)
-                {
-                    Destroy(allGizmos[_i].gameObject);
-                    allGizmos[_i] = null;
-                }
-            }
-
             CreateAllHandles();
             initialized = true;
             action = CheckHover;
+        }
+
+        private Color GetAxisColor(int index)
+        {
+            switch (index)
+            {
+                case 0: return Color.red;
+                case 1: return Color.green;
+                case 2: return Color.blue;
+                default: return Color.white;
+            }
+        }
+
+        private Material GetAxisMaterial(int index)
+        {
+            switch (index)
+            {
+                case 0: return materials.xRed;
+                case 1: return materials.yGreen;
+                case 2: return materials.zBlue;
+                default: return null;
+            }
+        }
+
+        private Color GetPlaneColor(int index)
+        {
+            switch (index)
+            {
+                case 3: return new Color(1.0f, 1.0f, 0.0f, 0.3f);
+                case 4: return new Color(1.0f, 0.0f, 1.0f, 0.3f);
+                case 5: return new Color(0.0f, 1.0f, 1.0f, 0.3f);
+                default: return Color.white;
+            }
+        }
+
+        private Material GetPlaneMaterial(int index)
+        {
+            switch (index)
+            {
+                case 3: return materials.xyYellow;
+                case 4: return materials.xzMagenta;
+                case 5: return materials.yzCyan;
+                default: return null;
+            }
         }
 
         void Update()
@@ -99,18 +127,7 @@ namespace TilesEditor
             transform.position = target.position;
             transform.rotation = target.rotation;
 
-            UpdateHandleActive();
-
             action?.Invoke();
-        }
-
-        void UpdateHandleActive()
-        {
-            for (int _i = 0; _i < allGizmos.Length; _i++)
-            {
-                iGizmo gizmo = allGizmos[_i];
-                gizmo?.gameObject?.SetActive(gizmo?.ShouldBeActive() ?? false);
-            }
         }
 
         // 狀態：Idle，檢查是否 hover 到 handle
@@ -159,119 +176,47 @@ namespace TilesEditor
         void CheckDrag()
         {
             Vector3 center = target.position;
-            if (rotateY && yRotHandle != null && yRotHandle.IsHovered())
+            foreach (var gizmo in allGizmos)
             {
-                activeGizmo = yRotHandle;
-                action = OnDragRotate;
-                rotationPlane = new Plane(transform.up, center);
-                Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-                if (rotationPlane.Raycast(ray, out float enter))
+                if (gizmo == null || !gizmo.ShouldBeActive() || !gizmo.IsHovered())
+                    continue;
+
+                activeGizmo = gizmo;
+                if (gizmo is RotateGizmo rotateGizmo)
                 {
-                    rotateStartPoint = ray.GetPoint(enter);
-                    objectStartRot = target.rotation;
+                    action = OnDragRotate;
+                    rotationPlane = new Plane(rotateGizmo.WorldAxis, center);
+                    Ray ray = cam.ScreenPointToRay(Input.mousePosition);
+                    if (rotationPlane.Raycast(ray, out float enter))
+                    {
+                        rotateStartPoint = ray.GetPoint(enter);
+                        objectStartRot = target.rotation;
+                        return;
+                    }
+                }
+                else if (gizmo is AxisGizmo axisGizmo)
+                {
+                    action = OnDragAxis;
+                    Vector3 axisDir = transform.TransformDirection(axisGizmo.WorldDirection).normalized;
+                    dragStartPos = GetClosestPointOnAxis(cam.ScreenPointToRay(Input.mousePosition), target.position, axisDir);
+                    objectStartPos = target.position;
                     return;
                 }
-            }
-            else if (rotateX && xRotHandle != null && xRotHandle.IsHovered())
-            {
-                activeGizmo = xRotHandle;
-                action = OnDragRotate;
-                rotationPlane = new Plane(transform.right, center);
-                Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-                if (rotationPlane.Raycast(ray, out float enter))
+                else if (gizmo is PlaneGizmo planeGizmo)
                 {
-                    rotateStartPoint = ray.GetPoint(enter);
-                    objectStartRot = target.rotation;
+                    action = OnDragPlane;
+                    Plane dragPlane = planeGizmo.GetDragPlane(transform, target.position);
+                    Ray ray = cam.ScreenPointToRay(Input.mousePosition);
+                    if (!dragPlane.Raycast(ray, out float enter))
+                    {
+                        dragPlane = new Plane(-dragPlane.normal, dragPlane.distance);
+                        if (!dragPlane.Raycast(ray, out enter))
+                            return;
+                    }
+                    dragStartPos = ray.GetPoint(enter);
+                    objectStartPos = target.position;
                     return;
                 }
-            }
-            else if (rotateZ && zRotHandle != null && zRotHandle.IsHovered())
-            {
-                activeGizmo = zRotHandle;
-                action = OnDragRotate;
-                rotationPlane = new Plane(transform.forward, center);
-                Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-                if (rotationPlane.Raycast(ray, out float enter))
-                {
-                    rotateStartPoint = ray.GetPoint(enter);
-                    objectStartRot = target.rotation;
-                    return;
-                }
-            }
-            else if (translateX && xHandle != null && xHandle.IsHovered())
-            {
-                activeGizmo = xHandle;
-                action = OnDragAxis;
-                Vector3 axisDir = transform.TransformDirection(xHandle.WorldDirection).normalized;
-                dragStartPos = GetClosestPointOnAxis(cam.ScreenPointToRay(Input.mousePosition), target.position, axisDir);
-                objectStartPos = target.position;
-                return;
-            }
-            else if (translateY && yHandle != null && yHandle.IsHovered())
-            {
-                activeGizmo = yHandle;
-                action = OnDragAxis;
-                Vector3 axisDir = transform.TransformDirection(yHandle.WorldDirection).normalized;
-                dragStartPos = GetClosestPointOnAxis(cam.ScreenPointToRay(Input.mousePosition), target.position, axisDir);
-                objectStartPos = target.position;
-                return;
-            }
-            else if (translateZ && zHandle != null && zHandle.IsHovered())
-            {
-                activeGizmo = zHandle;
-                action = OnDragAxis;
-                Vector3 axisDir = transform.TransformDirection(zHandle.WorldDirection).normalized;
-                dragStartPos = GetClosestPointOnAxis(cam.ScreenPointToRay(Input.mousePosition), target.position, axisDir);
-                objectStartPos = target.position;
-                return;
-            }
-            else if (translateX && translateY && xyHandle != null && xyHandle.IsHovered())
-            {
-                activeGizmo = xyHandle;
-                action = OnDragPlane;
-                Plane dragPlane = xyHandle.GetDragPlane(transform, target.position);
-                Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-                if (!dragPlane.Raycast(ray, out float enter))
-                {
-                    dragPlane = new Plane(-dragPlane.normal, dragPlane.distance);
-                    if (!dragPlane.Raycast(ray, out enter))
-                        return;
-                }
-                dragStartPos = ray.GetPoint(enter);
-                objectStartPos = target.position;
-                return;
-            }
-            else if (translateX && translateZ && xzHandle != null && xzHandle.IsHovered())
-            {
-                activeGizmo = xzHandle;
-                action = OnDragPlane;
-                Plane dragPlane = xzHandle.GetDragPlane(transform, target.position);
-                Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-                if (!dragPlane.Raycast(ray, out float enter))
-                {
-                    dragPlane = new Plane(-dragPlane.normal, dragPlane.distance);
-                    if (!dragPlane.Raycast(ray, out enter))
-                        return;
-                }
-                dragStartPos = ray.GetPoint(enter);
-                objectStartPos = target.position;
-                return;
-            }
-            else if (translateY && translateZ && yzHandle != null && yzHandle.IsHovered())
-            {
-                activeGizmo = yzHandle;
-                action = OnDragPlane;
-                Plane dragPlane = yzHandle.GetDragPlane(transform, target.position);
-                Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-                if (!dragPlane.Raycast(ray, out float enter))
-                {
-                    dragPlane = new Plane(-dragPlane.normal, dragPlane.distance);
-                    if (!dragPlane.Raycast(ray, out enter))
-                        return;
-                }
-                dragStartPos = ray.GetPoint(enter);
-                objectStartPos = target.position;
-                return;
             }
         }
 
@@ -348,7 +293,7 @@ namespace TilesEditor
             action = CheckHover;
         }
 
-        Vector3 GetClosestPointOnAxis(Ray ray, Vector3 axisOrigin, Vector3 axisDir)
+        public Vector3 GetClosestPointOnAxis(Ray ray, Vector3 axisOrigin, Vector3 axisDir)
         {
             Vector3 p1 = ray.origin;
             Vector3 d1 = ray.direction;
@@ -373,17 +318,57 @@ namespace TilesEditor
 
         void CreateAllHandles()
         {
-            xHandle = CreateAxisHandle("X_Handle", new Vector3(AXIS_HANDLE_OFFSET, 0.0f, 0.0f), Quaternion.Euler(0.0f, 0.0f, -90.0f), Color.red, AxisGizmo.Axis.X);
-            yHandle = CreateAxisHandle("Y_Handle", new Vector3(0.0f, AXIS_HANDLE_OFFSET, 0.0f), Quaternion.identity, Color.green, AxisGizmo.Axis.Y);
-            zHandle = CreateAxisHandle("Z_Handle", new Vector3(0.0f, 0.0f, AXIS_HANDLE_OFFSET), Quaternion.Euler(90.0f, 0.0f, 0.0f), Color.blue, AxisGizmo.Axis.Z);
+            if (!initialized)
+            {
+                allGizmos[0] = CreateAxisHandle("X_Handle", new Vector3(AXIS_HANDLE_OFFSET, 0.0f, 0.0f), Quaternion.Euler(0.0f, 0.0f, -90.0f), Color.red, AxisGizmo.Axis.X);
+                allGizmos[1] = CreateAxisHandle("Y_Handle", new Vector3(0.0f, AXIS_HANDLE_OFFSET, 0.0f), Quaternion.identity, Color.green, AxisGizmo.Axis.Y);
+                allGizmos[2] = CreateAxisHandle("Z_Handle", new Vector3(0.0f, 0.0f, AXIS_HANDLE_OFFSET), Quaternion.Euler(90.0f, 0.0f, 0.0f), Color.blue, AxisGizmo.Axis.Z);
 
-            xyHandle = CreatePlaneHandle("XY_Handle", new Vector3(PLANE_HANDLE_OFFSET, PLANE_HANDLE_OFFSET, 0.0f), Quaternion.identity, new Color(1.0f, 1.0f, 0.0f, 0.3f), PlaneGizmo.PlaneType.XY, PLANE_HANDLE_SIZE);
-            xzHandle = CreatePlaneHandle("XZ_Handle", new Vector3(PLANE_HANDLE_OFFSET, 0.0f, PLANE_HANDLE_OFFSET), Quaternion.Euler(90.0f, 0.0f, 0.0f), new Color(1.0f, 0.0f, 1.0f, 0.3f), PlaneGizmo.PlaneType.XZ, PLANE_HANDLE_SIZE);
-            yzHandle = CreatePlaneHandle("YZ_Handle", new Vector3(0.0f, PLANE_HANDLE_OFFSET, PLANE_HANDLE_OFFSET), Quaternion.Euler(0.0f, -90.0f, 0.0f), new Color(0.0f, 1.0f, 1.0f, 0.3f), PlaneGizmo.PlaneType.YZ, PLANE_HANDLE_SIZE);
+                allGizmos[3] = CreatePlaneHandle("XY_Handle", new Vector3(PLANE_HANDLE_OFFSET, PLANE_HANDLE_OFFSET, 0.0f), Quaternion.identity, new Color(1.0f, 1.0f, 0.0f, 0.3f), PlaneType.XY, PLANE_HANDLE_SIZE);
+                allGizmos[4] = CreatePlaneHandle("XZ_Handle", new Vector3(PLANE_HANDLE_OFFSET, 0.0f, PLANE_HANDLE_OFFSET), Quaternion.Euler(90.0f, 0.0f, 0.0f), new Color(1.0f, 0.0f, 1.0f, 0.3f), PlaneType.XZ, PLANE_HANDLE_SIZE);
+                allGizmos[5] = CreatePlaneHandle("YZ_Handle", new Vector3(0.0f, PLANE_HANDLE_OFFSET, PLANE_HANDLE_OFFSET), Quaternion.Euler(0.0f, -90.0f, 0.0f), new Color(0.0f, 1.0f, 1.0f, 0.3f), PlaneType.YZ, PLANE_HANDLE_SIZE);
 
-            xRotHandle = CreateRotateHandle("X_Rotate", Vector3.zero, Quaternion.Euler(0.0f, 0.0f, 90.0f), Color.red, RotateGizmo.Axis.X);
-            yRotHandle = CreateRotateHandle("Y_Rotate", Vector3.zero, Quaternion.identity, Color.green, RotateGizmo.Axis.Y);
-            zRotHandle = CreateRotateHandle("Z_Rotate", Vector3.zero, Quaternion.Euler(90.0f, 0.0f, 0.0f), Color.blue, RotateGizmo.Axis.Z);
+                allGizmos[6] = CreateRotateHandle("X_Rotate", Vector3.zero, Quaternion.Euler(0.0f, 0.0f, 90.0f), Color.red, RotateGizmo.Axis.X);
+                allGizmos[7] = CreateRotateHandle("Y_Rotate", Vector3.zero, Quaternion.identity, Color.green, RotateGizmo.Axis.Y);
+                allGizmos[8] = CreateRotateHandle("Z_Rotate", Vector3.zero, Quaternion.Euler(90.0f, 0.0f, 0.0f), Color.blue, RotateGizmo.Axis.Z);
+            }
+            else
+            {
+                for (int i = 0; i < allGizmos.Length; i++)
+                {
+                    if (allGizmos[i] != null)
+                    {
+                        var gizmo = allGizmos[i];
+                        if (gizmo is AxisGizmo axisGizmo)
+                        {
+                            axisGizmo.Initialize((AxisGizmo.Axis)i, GetAxisColor(i), this);
+                            var renderer = (gizmo as MonoBehaviour).GetComponent<MeshRenderer>();
+                            if (renderer != null) renderer.sharedMaterial = GetAxisMaterial(i);
+                        }
+                        else if (gizmo is PlaneGizmo planeGizmo)
+                        {
+                            planeGizmo.Initialize((PlaneGizmo.PlaneType)(i - 3), GetPlaneColor(i), this);
+                            var renderer = (gizmo as MonoBehaviour).GetComponent<MeshRenderer>();
+                            if (renderer != null) renderer.sharedMaterial = GetPlaneMaterial(i);
+                        }
+                        else if (gizmo is RotateGizmo rotateGizmo)
+                        {
+                            rotateGizmo.Initialize((RotateGizmo.Axis)(i - 6), GetAxisColor(i - 6), this, AXIS_HANDLE_THICKNESS);
+                            var renderer = (gizmo as MonoBehaviour).GetComponent<MeshRenderer>();
+                            if (renderer != null) renderer.sharedMaterial = GetAxisMaterial(i - 6);
+                        }
+                    }
+
+                }
+            }
+
+            for (int i = 0; i < allGizmos.Length; i++)
+            {
+                if (allGizmos[i] != null)
+                {
+                    (allGizmos[i] as MonoBehaviour).gameObject.SetActive(allGizmos[i].ShouldBeActive());
+                }
+            }
         }
 
         AxisGizmo CreateAxisHandle(string name, Vector3 localPos, Quaternion localRot, Color color, AxisGizmo.Axis axis)
@@ -420,9 +405,9 @@ namespace TilesEditor
             planeGizmo.Initialize(type, color, this);
             // 指定材質
             var renderer = go.GetComponent<MeshRenderer>();
-            if (type == PlaneGizmo.PlaneType.XY) renderer.sharedMaterial = materials.xyYellow;
-            else if (type == PlaneGizmo.PlaneType.XZ) renderer.sharedMaterial = materials.xzMagenta;
-            else if (type == PlaneGizmo.PlaneType.YZ) renderer.sharedMaterial = materials.yzCyan;
+            if (type == PlaneType.XY) renderer.sharedMaterial = materials.xyYellow;
+            else if (type == PlaneType.XZ) renderer.sharedMaterial = materials.xzMagenta;
+            else if (type == PlaneType.YZ) renderer.sharedMaterial = materials.yzCyan;
             return planeGizmo;
         }
 
@@ -520,13 +505,13 @@ namespace TilesEditor
             switch (type)
             {
                 case PlaneGizmo.PlaneType.XY:
-                    targetGizmo = xyHandle;
+                    targetGizmo = (PlaneGizmo)allGizmos[3];
                     break;
                 case PlaneGizmo.PlaneType.XZ:
-                    targetGizmo = xzHandle;
+                    targetGizmo = (PlaneGizmo)allGizmos[4];
                     break;
                 case PlaneGizmo.PlaneType.YZ:
-                    targetGizmo = yzHandle;
+                    targetGizmo = (PlaneGizmo)allGizmos[5];
                     break;
             }
 
@@ -543,15 +528,17 @@ namespace TilesEditor
             switch (type)
             {
                 case PlaneGizmo.PlaneType.XY:
-                    xyHandle.SetInvisible(true);
+                    allGizmos[3].SetInvisible(true);
                     break;
                 case PlaneGizmo.PlaneType.XZ:
-                    xzHandle.SetInvisible(true);
+                    allGizmos[4].SetInvisible(true);
                     break;
                 case PlaneGizmo.PlaneType.YZ:
-                    yzHandle.SetInvisible(true);
+                    allGizmos[5].SetInvisible(true);
                     break;
             }
         }
+
+
     }
 }

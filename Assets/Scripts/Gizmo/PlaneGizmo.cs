@@ -97,5 +97,20 @@ namespace TilesEditor
                 default: return false;
             }
         }
+
+        public void OnDrag()
+        {
+            if (gizmo == null || gizmo.target == null || gizmo.cam == null) return;
+
+            Ray ray = gizmo.cam.ScreenPointToRay(Input.mousePosition);
+            Plane dragPlane = GetDragPlane(gizmo.transform, gizmo.target.position);
+            if (dragPlane.Raycast(ray, out float enter))
+            {
+                Vector3 currentPoint = ray.GetPoint(enter);
+                Vector3 delta = currentPoint - gizmo.dragStartPos;
+                if (delta.magnitude < 100f)
+                    gizmo.target.position = gizmo.objectStartPos + delta;
+            }
+        }
     }
 }

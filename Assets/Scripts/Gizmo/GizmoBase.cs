@@ -12,10 +12,11 @@ namespace TilesEditor
     // =============================================
     public interface iGizmo
     {
-        GameObject gameObject { get; }
         void SetMaterialColor(Color color);
         void ResetColor();
         bool ShouldBeActive();
         bool IsHovered();
+        void SetInvisible(bool value);
+        void OnDrag();
     }
 }
