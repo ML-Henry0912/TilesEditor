@@ -38,13 +38,12 @@ namespace TilesEditor
 
         public bool ShouldBeActive()
         {
-            if (gizmoRoot == null) return false;
             return gizmoRoot.gizmoEnable[(int)type];
         }
 
         public bool IsHovered()
         {
-            if (isHovered && ((iGizmo)this).ShouldBeActive())
+            if (isHovered && ShouldBeActive())
             {
                 SetMaterialColor(Color.yellow);
                 return true;
