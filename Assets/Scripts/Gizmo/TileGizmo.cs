@@ -17,7 +17,7 @@ namespace TilesEditor
             rotateY = false;
             rotateZ = true;
 
-            SetPlaneGizmoProperties(PlaneGizmo.PlaneType.XY, new Vector3(0.0f, 0.0f, -0.6f));
+            SetPlaneGizmoProperties(iGizmo.GizmoType.XY, new Vector3(0.0f, 0.0f, -0.6f));
             //SetPlaneGizmoInvisible(PlaneGizmo.PlaneType.XY);
 
             //DragPlane(PlaneGizmo.PlaneType.XY);

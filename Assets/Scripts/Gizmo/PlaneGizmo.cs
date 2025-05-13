@@ -7,13 +7,13 @@
 // 5. 本元件為 TransformGizmo 的子物件，請勿手動移除或更改父子結構。
 // =============================================
 using UnityEngine;
+using static TilesEditor.iGizmo;
 
 namespace TilesEditor
 {
     public class PlaneGizmo : MonoBehaviour, iGizmo
     {
-        public enum PlaneType { XY, XZ, YZ }
-        public PlaneType planeType;
+        public GizmoType type;
 
         private bool isHovered = false;
         protected TransformGizmo gizmo;
@@ -21,9 +21,9 @@ namespace TilesEditor
         protected MaterialPropertyBlock propertyBlock;
         Camera cam;
 
-        public void Initialize(PlaneType type, Color color, TransformGizmo gizmo)
+        public void Initialize(GizmoType type, Color color, TransformGizmo gizmo)
         {
-            planeType = type;
+            this.type = type;
             baseColor = color;
             SetMaterialColor(color);
             this.gizmo = gizmo;
@@ -59,17 +59,6 @@ namespace TilesEditor
             SetMaterialColor(baseColor);
         }
 
-        public Plane GetDragPlane(Transform gizmoRoot, Vector3 origin)
-        {
-            switch (planeType)
-            {
-                case PlaneType.XY: return new Plane(gizmoRoot.forward, origin);
-                case PlaneType.XZ: return new Plane(gizmoRoot.up, origin);
-                case PlaneType.YZ: return new Plane(gizmoRoot.right, origin);
-                default: return new Plane(Vector3.up, origin);
-            }
-        }
-
         private void OnMouseEnter()
         {
             isHovered = true;
@@ -87,15 +76,14 @@ namespace TilesEditor
             return isHovered;
         }
 
-        // 判斷此 handle 是否該顯示
         public bool ShouldBeActive()
         {
             if (gizmo == null) return false;
-            switch (planeType)
+            switch (type)
             {
-                case PlaneType.XY: return gizmo.translateX && gizmo.translateY;
-                case PlaneType.XZ: return gizmo.translateX && gizmo.translateZ;
-                case PlaneType.YZ: return gizmo.translateY && gizmo.translateZ;
+                case GizmoType.XY: return gizmo.translateX && gizmo.translateY;
+                case GizmoType.XZ: return gizmo.translateX && gizmo.translateZ;
+                case GizmoType.YZ: return gizmo.translateY && gizmo.translateZ;
                 default: return false;
             }
         }
@@ -111,6 +99,17 @@ namespace TilesEditor
                 Vector3 delta = currentPoint - gizmo.dragStartPos;
                 if (delta.magnitude < 100f)
                     gizmo.target.position = gizmo.objectStartPos + delta;
+            }
+        }
+
+        public Plane GetDragPlane(Transform gizmoTransform, Vector3 center)
+        {
+            switch (type)
+            {
+                case GizmoType.XY: return new Plane(gizmoTransform.forward, center);
+                case GizmoType.XZ: return new Plane(gizmoTransform.up, center);
+                case GizmoType.YZ: return new Plane(gizmoTransform.right, center);
+                default: return new Plane(Vector3.up, center);
             }
         }
     }

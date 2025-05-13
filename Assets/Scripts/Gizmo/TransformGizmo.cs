@@ -328,16 +328,16 @@ namespace TilesEditor
             allGizmos[1] = CreateAxisHandle("Y_Handle", new Vector3(0.0f, AXIS_HANDLE_OFFSET, 0.0f), Quaternion.identity, Color.green, GizmoType.Y);
             allGizmos[2] = CreateAxisHandle("Z_Handle", new Vector3(0.0f, 0.0f, AXIS_HANDLE_OFFSET), Quaternion.Euler(90.0f, 0.0f, 0.0f), Color.blue, GizmoType.Z);
 
-            allGizmos[3] = CreatePlaneHandle("XY_Handle", new Vector3(PLANE_HANDLE_OFFSET, PLANE_HANDLE_OFFSET, 0.0f), Quaternion.identity, new Color(1.0f, 1.0f, 0.0f, 0.3f), PlaneType.XY, PLANE_HANDLE_SIZE);
-            allGizmos[4] = CreatePlaneHandle("XZ_Handle", new Vector3(PLANE_HANDLE_OFFSET, 0.0f, PLANE_HANDLE_OFFSET), Quaternion.Euler(90.0f, 0.0f, 0.0f), new Color(1.0f, 0.0f, 1.0f, 0.3f), PlaneType.XZ, PLANE_HANDLE_SIZE);
-            allGizmos[5] = CreatePlaneHandle("YZ_Handle", new Vector3(0.0f, PLANE_HANDLE_OFFSET, PLANE_HANDLE_OFFSET), Quaternion.Euler(0.0f, -90.0f, 0.0f), new Color(0.0f, 1.0f, 1.0f, 0.3f), PlaneType.YZ, PLANE_HANDLE_SIZE);
+            allGizmos[3] = CreatePlaneHandle("XY_Handle", new Vector3(PLANE_HANDLE_OFFSET, PLANE_HANDLE_OFFSET, 0.0f), Quaternion.identity, new Color(1.0f, 1.0f, 0.0f, 0.3f), GizmoType.XY);
+            allGizmos[4] = CreatePlaneHandle("XZ_Handle", new Vector3(PLANE_HANDLE_OFFSET, 0.0f, PLANE_HANDLE_OFFSET), Quaternion.Euler(90.0f, 0.0f, 0.0f), new Color(1.0f, 0.0f, 1.0f, 0.3f), GizmoType.XZ);
+            allGizmos[5] = CreatePlaneHandle("YZ_Handle", new Vector3(0.0f, PLANE_HANDLE_OFFSET, PLANE_HANDLE_OFFSET), Quaternion.Euler(0.0f, -90.0f, 0.0f), new Color(0.0f, 1.0f, 1.0f, 0.3f), GizmoType.YZ);
 
             allGizmos[6] = CreateRotateHandle("X_Rotate", Vector3.zero, Quaternion.Euler(0.0f, 0.0f, 90.0f), Color.red, GizmoType.ROT_X);
             allGizmos[7] = CreateRotateHandle("Y_Rotate", Vector3.zero, Quaternion.identity, Color.green, GizmoType.ROT_Y);
             allGizmos[8] = CreateRotateHandle("Z_Rotate", Vector3.zero, Quaternion.Euler(90.0f, 0.0f, 0.0f), Color.blue, GizmoType.ROT_Z);
         }
 
-        AxisGizmo CreateAxisHandle(string name, Vector3 localPos, Quaternion localRot, Color color, GizmoType axis)
+        AxisGizmo CreateAxisHandle(string name, Vector3 localPos, Quaternion localRot, Color color, GizmoType type)
         {
             GameObject go = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
             go.name = name;
@@ -347,16 +347,16 @@ namespace TilesEditor
             go.transform.localScale = new Vector3(AXIS_HANDLE_SCALE, AXIS_HANDLE_LENGTH, AXIS_HANDLE_SCALE);
 
             var axisGizmo = go.AddComponent<AxisGizmo>();
-            axisGizmo.Initialize(axis, color, this);
+            axisGizmo.Initialize(type, color, this);
             // 指定材質
             var renderer = go.GetComponent<MeshRenderer>();
-            if (axis == GizmoType.X) renderer.sharedMaterial = materials.materials[iGizmo.GIZMO_X];
-            else if (axis == GizmoType.Y) renderer.sharedMaterial = materials.materials[iGizmo.GIZMO_Y];
-            else if (axis == GizmoType.Z) renderer.sharedMaterial = materials.materials[iGizmo.GIZMO_Z];
+            if (type == GizmoType.X) renderer.sharedMaterial = materials.materials[iGizmo.GIZMO_X];
+            else if (type == GizmoType.Y) renderer.sharedMaterial = materials.materials[iGizmo.GIZMO_Y];
+            else if (type == GizmoType.Z) renderer.sharedMaterial = materials.materials[iGizmo.GIZMO_Z];
             return axisGizmo;
         }
 
-        PlaneGizmo CreatePlaneHandle(string name, Vector3 localPos, Quaternion localRot, Color color, PlaneGizmo.PlaneType type, float size)
+        PlaneGizmo CreatePlaneHandle(string name, Vector3 localPos, Quaternion localRot, Color color, GizmoType type)
         {
             GameObject go = GameObject.CreatePrimitive(PrimitiveType.Cube);
             go.name = name;
@@ -365,15 +365,15 @@ namespace TilesEditor
             go.transform.localRotation = localRot;
 
             // 根據平面類型設定正確的 scale
-            go.transform.localScale = new Vector3(size, size, 0.05f); ;
+            go.transform.localScale = new Vector3(PLANE_HANDLE_SIZE, PLANE_HANDLE_SIZE, 0.05f);
 
             var planeGizmo = go.AddComponent<PlaneGizmo>();
             planeGizmo.Initialize(type, color, this);
             // 指定材質
             var renderer = go.GetComponent<MeshRenderer>();
-            if (type == PlaneType.XY) renderer.sharedMaterial = materials.materials[GIZMO_XY];
-            else if (type == PlaneType.XZ) renderer.sharedMaterial = materials.materials[GIZMO_XZ];
-            else if (type == PlaneType.YZ) renderer.sharedMaterial = materials.materials[GIZMO_YZ];
+            if (type == GizmoType.XY) renderer.sharedMaterial = materials.materials[GIZMO_XY];
+            else if (type == GizmoType.XZ) renderer.sharedMaterial = materials.materials[GIZMO_XZ];
+            else if (type == GizmoType.YZ) renderer.sharedMaterial = materials.materials[GIZMO_YZ];
             return planeGizmo;
         }
 
@@ -468,18 +468,18 @@ namespace TilesEditor
             }
         }
 
-        protected void SetPlaneGizmoProperties(PlaneType type, Vector3? position = null)
+        protected void SetPlaneGizmoProperties(GizmoType type, Vector3? position = null)
         {
             PlaneGizmo targetGizmo = null;
             switch (type)
             {
-                case PlaneGizmo.PlaneType.XY:
+                case GizmoType.XY:
                     targetGizmo = (PlaneGizmo)allGizmos[3];
                     break;
-                case PlaneGizmo.PlaneType.XZ:
+                case GizmoType.XZ:
                     targetGizmo = (PlaneGizmo)allGizmos[4];
                     break;
-                case PlaneGizmo.PlaneType.YZ:
+                case GizmoType.YZ:
                     targetGizmo = (PlaneGizmo)allGizmos[5];
                     break;
             }
@@ -492,17 +492,17 @@ namespace TilesEditor
             }
         }
 
-        protected void SetPlaneGizmoInvisible(PlaneGizmo.PlaneType type)
+        protected void SetPlaneGizmoInvisible(GizmoType type)
         {
             switch (type)
             {
-                case PlaneGizmo.PlaneType.XY:
+                case GizmoType.XY:
                     allGizmos[3].SetInvisible(true);
                     break;
-                case PlaneGizmo.PlaneType.XZ:
+                case GizmoType.XZ:
                     allGizmos[4].SetInvisible(true);
                     break;
-                case PlaneGizmo.PlaneType.YZ:
+                case GizmoType.YZ:
                     allGizmos[5].SetInvisible(true);
                     break;
             }
