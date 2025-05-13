@@ -524,18 +524,8 @@ namespace TilesEditor
 
         protected void SetPlaneGizmoInvisible(GizmoType type)
         {
-            switch (type)
-            {
-                case GizmoType.XY:
-                    allGizmos[3].SetInvisible(true);
-                    break;
-                case GizmoType.XZ:
-                    allGizmos[4].SetInvisible(true);
-                    break;
-                case GizmoType.YZ:
-                    allGizmos[5].SetInvisible(true);
-                    break;
-            }
+            allGizmos[(int)type].SetInvisible(true);
+
         }
     }
 }
