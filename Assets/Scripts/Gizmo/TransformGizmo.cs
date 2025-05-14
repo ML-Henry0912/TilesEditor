@@ -36,7 +36,6 @@ namespace TilesEditor
         Action action;
 
         bool initialized = false;
-        bool isHidden = false;
 
         public Color[] gizmoColors = {
             Color.red,
@@ -56,6 +55,9 @@ namespace TilesEditor
             this.cam = cam;
             this.materials = materials;
 
+            transform.localScale = Vector3.one;
+
+
             // 檢查是否已經初始化過相同的目標
             if (initialized)
             {
@@ -71,26 +73,18 @@ namespace TilesEditor
             }
 
             initialized = true;
-            isHidden = false;
             action = CheckHoverGizmo;
         }
 
         public void HideAllGizmos()
         {
-            if (!initialized) return;
-            isHidden = true;
-            foreach (var gizmo in allGizmos)
-            {
-                if (gizmo != null)
-                {
-                    gizmo.SetInvisible(true);
-                }
-            }
+            transform.localScale = Vector3.zero;
+
         }
 
         void Update()
         {
-            if (!initialized || target == null || cam == null || isHidden) return;
+            if (!initialized || target == null || cam == null) return;
 
             transform.position = target.position;
             transform.rotation = target.rotation;
