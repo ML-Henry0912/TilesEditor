@@ -51,7 +51,7 @@ namespace TilesEditor
 
         public void Initialize(Transform target, Camera cam, GizmoMaterials materials)
         {
-            this.target = target;
+            this.target = target.parent;
             this.cam = cam;
             this.materials = materials;
 

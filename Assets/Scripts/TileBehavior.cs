@@ -6,9 +6,12 @@ namespace TilesEditor
 {
     public class TileBehavior : MonoBehaviour
     {
+        public Collider collider;
+
+
         public void Initialize()
         {
-            this.tag = "Tile";
+            collider.gameObject.tag = "Tile";
         }
 
         // Update is called once per frame
