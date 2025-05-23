@@ -29,6 +29,7 @@ namespace TilesEditor
         private GameObject border;
         private bool isDragging = false;
         private Vector2 lastMousePosition;
+        private Image backgroundImage;
 
         private void CalculateSizes()
         {
@@ -149,6 +150,7 @@ namespace TilesEditor
             // 添加面板背景
             Image panelImage = background.AddComponent<Image>();
             panelImage.color = new Color(0.2f, 0.2f, 0.8f, 0.8f);
+            backgroundImage = panelImage;
 
             // 計算容器高度
             containerHeight = panelHeight - (panelMargin * 2) - (borderPadding * 2);
@@ -193,11 +195,18 @@ namespace TilesEditor
         {
             if (!isInitialized || tileButtons.Count == 0) return;
 
+            Vector2 mousePosition = Input.mousePosition;
+            bool isMouseOverBackground = RectTransformUtility.RectangleContainsScreenPoint(backgroundRect, mousePosition, canvas.worldCamera);
+
             // 處理滑鼠拖曳
             if (Input.GetMouseButtonDown(0))
             {
-                isDragging = true;
-                lastMousePosition = Input.mousePosition;
+                // 檢查是否點擊到背景
+                if (isMouseOverBackground)
+                {
+                    isDragging = true;
+                    lastMousePosition = mousePosition;
+                }
             }
             else if (Input.GetMouseButtonUp(0))
             {
@@ -216,7 +225,7 @@ namespace TilesEditor
 
             // 處理滾輪
             float scrollInput = -Input.GetAxis("Mouse ScrollWheel");
-            if (scrollInput != 0)
+            if (scrollInput != 0 && isMouseOverBackground)
             {
                 currentScrollPosition += scrollInput * scrollSpeed;
                 currentScrollPosition = Mathf.Clamp(currentScrollPosition, 0, Mathf.Max(0, contentHeight - containerHeight));
