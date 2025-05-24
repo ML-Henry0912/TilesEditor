@@ -5,31 +5,64 @@ using UnityEngine.UI;
 
 namespace TilesEditor
 {
+    /// <summary>
+    /// UI 元件初始化規則：
+    /// 1. 所有 UI 元件變數都應設為 public，允許外部指定或修改
+    /// 2. 初始化流程：
+    ///    - 檢查必要元件是否存在（如 Canvas、按鈕預製體等）
+    ///    - 如果元件不存在，則自動創建
+    ///    - 如果元件已存在，則使用現有元件
+    /// 3. 元件創建順序：
+    ///    - 先創建父級元件（如面板）
+    ///    - 再創建子級元件（如邊框、背景）
+    ///    - 最後創建互動元件（如按鈕）
+    /// 4. 元件命名規則：
+    ///    - 使用 PascalCase 命名
+    ///    - 名稱應清楚表明元件用途
+    /// 5. 元件層級關係：
+    ///    - 使用 transform.SetParent 設置父子關係
+    ///    - 使用 transform.SetAsFirstSibling/SetAsLastSibling 控制顯示順序
+    /// 6. 元件初始化檢查：
+    ///    - 使用 null 檢查確保元件存在
+    ///    - 使用 GetComponent 獲取必要組件
+    ///    - 使用 Debug.LogError 記錄錯誤
+    /// 7. 元件尺寸計算：
+    ///    - 使用 Screen.width/height 計算螢幕相關尺寸
+    ///    - 使用百分比計算相對尺寸
+    ///    - 考慮邊距和間距
+    /// 8. 元件事件綁定：
+    ///    - 在初始化時綁定事件
+    ///    - 使用 lambda 表達式捕獲必要參數
+    /// 9. 元件更新規則：
+    ///    - 在 Update 中處理動態更新
+    ///    - 使用 isInitialized 標記避免重複初始化
+    ///    - 只在必要時更新元件狀態
+    /// </summary>
     [RequireComponent(typeof(Canvas))]
     public class UiManager : MonoBehaviour
     {
-        [SerializeField] private GameObject buttonPrefab;
-        [SerializeField] private float buttonSpacing = 20f;
-        [SerializeField] private float scrollSpeed = 90f;
-        [SerializeField] private float panelMargin = 30f;
-        [SerializeField] private float borderPadding = 10f;
-        [SerializeField] private float dragSensitivity = 1f;
+        public GameObject buttonPrefab;
+        public float buttonSpacing = 20f;
+        public float scrollSpeed = 90f;
+        public float panelMargin = 30f;
+        public float borderPadding = 10f;
+        public float dragSensitivity = 1f;
 
-        private Canvas canvas;
-        private RectTransform panelRect;
-        private RectTransform backgroundRect;
-        private List<GameObject> tileButtons = new List<GameObject>();
-        private float containerHeight;
-        private float contentHeight;
-        private float currentScrollPosition = 0f;
-        private bool isInitialized = false;
-        private float buttonSize;
-        private float panelWidth;
-        private float panelHeight;
-        private GameObject border;
-        private bool isDragging = false;
-        private Vector2 lastMousePosition;
-        private Image backgroundImage;
+        public Canvas canvas;
+        public RectTransform panelRect;
+        public RectTransform backgroundRect;
+        public List<GameObject> tileButtons = new List<GameObject>();
+        public float containerHeight;
+        public float contentHeight;
+        public float currentScrollPosition = 0f;
+        public bool isInitialized = false;
+        public float buttonSize;
+        public float panelWidth;
+        public float panelHeight;
+        public GameObject border;
+        public bool isDragging = false;
+        public Vector2 lastMousePosition;
+        public Image backgroundImage;
 
         private void CalculateSizes()
         {
@@ -92,9 +125,21 @@ namespace TilesEditor
                 return;
             }
 
+            // 檢查必要元件
+            if (canvas == null)
+            {
+                canvas = GetComponent<Canvas>();
+                if (canvas == null)
+                {
+                    Debug.LogError("Canvas component is missing");
+                    return;
+                }
+            }
+
             // 計算所有尺寸
             CalculateSizes();
 
+            // 檢查按鈕預製體
             if (buttonPrefab == null)
             {
                 Debug.Log("Button Prefab is not assigned, creating one...");
@@ -108,49 +153,54 @@ namespace TilesEditor
 
             Debug.Log($"Initialize {GameMain.Main.tilePrefabList.count}, {GameMain.Main.tilePrefabList.tilePrefabs.Length}");
 
-            // 初始化 Canvas
-            canvas = GetComponent<Canvas>();
+            // 設置 Canvas
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
 
-            // 創建面板
-            GameObject panel = new GameObject("TilePanel");
-            panel.transform.SetParent(transform, false);
-            panelRect = panel.AddComponent<RectTransform>();
-            panelRect.anchorMin = new Vector2(0, 0);
-            panelRect.anchorMax = new Vector2(0, 1);
-            panelRect.pivot = new Vector2(0, 1);
-            panelRect.sizeDelta = new Vector2(panelWidth, panelHeight);
-            panelRect.anchoredPosition = new Vector2(panelMargin, -panelMargin);
+            // 檢查並創建面板
+            if (panelRect == null)
+            {
+                GameObject panel = new GameObject("TilePanel");
+                panel.transform.SetParent(transform, false);
+                panelRect = panel.AddComponent<RectTransform>();
+                panelRect.anchorMin = new Vector2(0, 0);
+                panelRect.anchorMax = new Vector2(0, 1);
+                panelRect.pivot = new Vector2(0, 1);
+                panelRect.sizeDelta = new Vector2(panelWidth, panelHeight);
+                panelRect.anchoredPosition = new Vector2(panelMargin, -panelMargin);
+            }
 
-            // 添加外框
-            border = new GameObject("Border");
-            border.transform.SetParent(panelRect, false);
-            RectTransform borderRect = border.AddComponent<RectTransform>();
-            borderRect.anchorMin = new Vector2(0, 0);
-            borderRect.anchorMax = new Vector2(1, 1);
-            borderRect.offsetMin = Vector2.zero;
-            borderRect.offsetMax = Vector2.zero;
-            Image borderImage = border.AddComponent<Image>();
-            borderImage.color = new Color(1f, 1f, 1f, 1f);
-            borderImage.type = Image.Type.Sliced;
-            borderImage.raycastTarget = false;
+            // 檢查並創建邊框
+            if (border == null)
+            {
+                border = new GameObject("Border");
+                border.transform.SetParent(panelRect, false);
+                RectTransform borderRect = border.AddComponent<RectTransform>();
+                borderRect.anchorMin = new Vector2(0, 0);
+                borderRect.anchorMax = new Vector2(1, 1);
+                borderRect.offsetMin = Vector2.zero;
+                borderRect.offsetMax = Vector2.zero;
+                Image borderImage = border.AddComponent<Image>();
+                borderImage.color = new Color(1f, 1f, 1f, 1f);
+                borderImage.type = Image.Type.Sliced;
+                borderImage.raycastTarget = false;
+                border.transform.SetAsFirstSibling();
+            }
 
-            // 確保外框在最上層
-            border.transform.SetAsFirstSibling();
+            // 檢查並創建背景
+            if (backgroundRect == null)
+            {
+                GameObject background = new GameObject("Background");
+                background.transform.SetParent(border.transform, false);
+                backgroundRect = background.AddComponent<RectTransform>();
+                backgroundRect.anchorMin = new Vector2(0, 0);
+                backgroundRect.anchorMax = new Vector2(1, 1);
+                backgroundRect.offsetMin = new Vector2(borderPadding, borderPadding);
+                backgroundRect.offsetMax = new Vector2(-borderPadding, -borderPadding);
 
-            // 創建背景
-            GameObject background = new GameObject("Background");
-            background.transform.SetParent(border.transform, false);
-            backgroundRect = background.AddComponent<RectTransform>();
-            backgroundRect.anchorMin = new Vector2(0, 0);
-            backgroundRect.anchorMax = new Vector2(1, 1);
-            backgroundRect.offsetMin = new Vector2(borderPadding, borderPadding);
-            backgroundRect.offsetMax = new Vector2(-borderPadding, -borderPadding);
-
-            // 添加面板背景
-            Image panelImage = background.AddComponent<Image>();
-            panelImage.color = new Color(0.2f, 0.2f, 0.8f, 0.8f);
-            backgroundImage = panelImage;
+                Image panelImage = background.AddComponent<Image>();
+                panelImage.color = new Color(0.2f, 0.2f, 0.8f, 0.8f);
+                backgroundImage = panelImage;
+            }
 
             // 計算容器高度
             containerHeight = panelHeight - (panelMargin * 2) - (borderPadding * 2);
